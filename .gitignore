@@ -1,5 +1,4 @@
 node_modules
 client-new/build
 .env
-.gitingore
 package-lock.json
