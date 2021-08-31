@@ -1,2 +1,3 @@
 client-new/build
 node_modules
+.gitignore
