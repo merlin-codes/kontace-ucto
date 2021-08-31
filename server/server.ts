@@ -5,7 +5,7 @@ require('dotenv').config();
 
 // making consts
 const app: express.Application = express();
-const PORT: number = 3103;
+const PORT: number = +(process.env.PORT || 3103);
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
 

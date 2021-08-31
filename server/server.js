@@ -36,7 +36,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 require('dotenv').config();
 // making consts
 const app = express_1.default();
-const PORT = 3103;
+const PORT = +(process.env.PORT || 3103);
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
 // Schema
@@ -105,7 +105,7 @@ app.get("/opt/:id", (_, s) => __awaiter(void 0, void 0, void 0, function* () {
     let oper = (yield qModel.findById(_.params.id));
     let ope_edit = [];
     oper.operations.map((o) => {
-        ope_edit.push(Object.assign(Object.assign({}, o), { umd: "", ud: "" }));
+        ope_edit.push(Object.assign(Object.assign({}, o), { umd: "", ud: "", correct: false }));
     });
     s.render("user", {
         operations: JSON.stringify(ope_edit),
