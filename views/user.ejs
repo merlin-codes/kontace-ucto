@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <title>jmeno: kontace.jmeno</title>
+</head>
+<body class="bg-dark text-white text-center">
+    <div id="app">
+        <table class="table table-hover table-dark container my-5">
+            <thead>
+                <tr><th></th><th colspan="3"><h4 class="text-center">Jmeno: {{ name }}</h4></th><th></th></tr>
+                <tr><th>index</th><th>Jmeno</th><th>Castka</th><th>MD</th><th>D</th></tr>
+            </thead>
+            <tbody>
+                <tr v-for="(operation, i) in operations">
+                    <td class="col-1"><p>{{i+1}}</p></td>
+                    <td class="col-5"><p>{{operation.name}}</p></td>
+                    <td><p>{{operation.cost}}</p></td>
+                    <td class="col-1"><p><input type="text" class="form-control bg-dark text-white text-center" v-model="operation.umd"></p></td>
+                    <td class="col-1"><p><input type="text" class="form-control bg-dark text-white text-center"  v-model="operation.ud"></p></td>
+                    <td class="col-1 text-danger fs-4" ><p v-if="!operation.correct">!</p></td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-success" @click="verify">Opravit</button>
+    </div>
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                name: '<%- name %>',
+                operations: JSON.parse('<%- operations %>'),
+                id: 0,
+                defaults: localStorage.getItem("O-<%= id %>") || "0"
+            },
+            methods: {
+                verify() {
+                    console.log("it is called");
+                    this.operations.map(o => {
+                        if (o.md == o.umd && o.d == o.ud) o.correct = true
+                    })
+                }
+            },
+            watch: {
+                operations: {
+                    handler: function (val, old) {
+                        localStorage.setItem("O-<%= id %>", JSON.stringify(this.operations));
+                        if (this.defaults != "1") this.defaults = "1";
+                    }, deep: true
+                },
+                defaults: {
+                    handler: function (val, old) {
+                        localStorage.setItem("D-<%= id %>", this.defaults)
+                        console.log("USER edited this")
+                    }
+                }
+            },
+            mounted: function () {
+                let $THIS = this;
+                console.log("<%= id %>")
+                if ($THIS.defaults != "0")
+                    $THIS.operations = JSON.parse(localStorage.getItem("O-<%= id %>"));
+            }
+        })
+    </script>
+</body>
+</html>

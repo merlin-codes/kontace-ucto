@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <title>jmeno: kontace.jmeno</title>
+    <script type="text/babel">
+    	import ReactDOM from "react-dom";
+        
+        const Operation = () => {
+            const name = '<%- name %>';
+            const [operations, setOperations] = useState([JSON.stringify('<%- operations %>')]);
+
+            function changeUMD(id, val) {
+                const opt = operations.filter(o => o.id == id)[0];
+                setOperations(...operations, {...opt, umd: val})
+            }
+            function changeUD(id, val) {
+                const opt = operations.filter(o => o.id == id)[0];
+                setOperations(...operations, {...opt, ud: val})
+            }
+
+	        return (
+	        	<div>
+                    <table className="table table-hover table-dark container my-5">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Jmeno: {name}</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <th>Operace</th>
+                                <th>Jmeno</th>
+                                <th>Castka</th>
+                                <th>MD</th>
+                                <th>D</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {operations.map((o, i) => 
+                                <tr>
+                                    <td className="col-1">{i+1}</td>
+                                    <td className="col-5">{o.name}</td>
+                                    <td className="col-1">{o.cost}</td>
+                                    <td className="col-1">
+                                        <input type="text" value={o.umd} onChange={e => changeUMD(o._id, e.target.value)} />
+                                    </td>
+                                    <td className="col-1">
+                                        <input type="text" value={o.ud} onChange={e => changeUD(o._id, e.target.value)} />
+                                    </td>
+                                    <td className="col-1" style={{visibility: o.d == o.ud || o.md == o.umd ? 'visible' : 'hidden'}}></td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+	        );
+		}
+
+		ReactDOM.render(<Operation/>, document.getElementById('root'));
+    </script>
+</head>
+<body>
+    <!-- <div id="app">
+        <table class="table table-hover table-dark container my-5">
+            <thead>
+                <tr><th></th><th colspan="3"><h4 class="text-center">Jmeno: {{ name }}</h4></th><th></th></tr>
+                <tr><th>index</th><th>Jmeno</th><th>Castka</th><th>MD</th><th>D</th></tr>
+            </thead>
+            <tbody>
+                <tr v-for="(operation, i) in operations">
+                    <td class="col-1"><p>{{i+1}}</p></td>
+                    <td class="col-5"><p>{{operation.name}}</p></td>
+                    <td><p>{{operation.cost}}</p></td>
+                    <td class="col-1"><p><input type="text" class="form-control bg-dark text-white text-center" v-model="operation.umd"></p></td>
+                    <td class="col-1"><p><input type="text" class="form-control bg-dark text-white text-center"  v-model="operation.ud"></p></td>
+                    <td class="col-1 text-danger" v-if="operation.d != operation.ud" >!</td>
+                </tr>
+            </tbody>
+        </table>
+        <button @click="save">Save</button>
+    </div> -->
+    <div id="root"></div>
+</body>
+</html>
+
