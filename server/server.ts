@@ -1,13 +1,20 @@
 import express, { Request, Response } from 'express';
 import mongoose, { ObjectId, Schema } from 'mongoose';
+import cors from "cors";
+// import request from "request";
+// import readline from 'readline';
+// import { google } from 'googleapis';
+// import { authorize, LCourses } from "./g.apis";
+// import fs from 'fs';
 require('dotenv').config();
 
 
 // making consts
 const app: express.Application = express();
-const PORT: number = +(process.env.PORT || 3103);
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
+const PORT: number = +(process.env.PORT || 3103);
+const T_PATH =  './data/t_google.json';
 
 // Schema
 const TokenSchema = new Schema({
@@ -35,11 +42,16 @@ interface IOperation extends Document {
 const qModel = mongoose.model<IOperation>("question", OperationSchema);
 
 
-// set
-app.set("view engine", "ejs");
-
 // use
 app.use(express.static("public"));
+app.use(cors());
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json())
+app.use("/google", require("./cio/GClass"))
+
+
+// set
+app.set("view engine", "ejs");
 
 
 // routes
@@ -120,7 +132,10 @@ app.post("/del", jsonBody, async (_, s) => {
 
 app.get("/back", (_, s) => s.redirect("/"));
 
+
+app.listen(PORT, () => console.log("HIPE"));
+
 mongoose.connect(process.env.URI || "").then(() => {
-    app.listen(PORT);
+    // app.listen(PORT);
     console.log("[SERVER]: running on "+"/"+PORT);
 });
