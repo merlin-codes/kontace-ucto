@@ -1,15 +1,11 @@
 import { Router, Request, Response } from "express";
 import mongoose, { ObjectId, Schema } from 'mongoose';
-import { IToken, TokenSchema } from "../morb/Token";
-import { IOperation, OperationSchema } from "../morb/Operation";
+import { IToken, TokenSchema, tModel } from "../morb/Token";
+import { IOperation, OperationSchema, qModel } from "../morb/Operation";
 
 
 const router = Router()
 const jsonBody = require("body-parser").json();
-
-const tModel = mongoose.model<IToken>("token", TokenSchema);
-
-const qModel = mongoose.model<IOperation>("question", OperationSchema);
 
 
 // routes
@@ -37,29 +33,6 @@ router.post("/create",jsonBody, async (r: Request, s: Response) => {
         s.sendStatus(403)
     }
 });
-
-router.get("/", async (_, s) => {
-    let operations = await qModel.find();
-    const users = await tModel.find();
-    let operation_ful = Array();
-
-    // operations.map(o => users.map(u => u._id == o.author ? o.push()))
-
-    operations.map(operation  => {
-        users.map(user => {   
-            if (user._id.toString() == (operation.author.toString())){
-                operation_ful.push({
-                    name: operation.name,
-                    user: user.author,
-                    id: operation._id
-                })
-            }
-        })
-    })
-    s.render("index", {
-        operations: operation_ful.reverse()
-    })
-})
 
 router.get("/opt/:id", async (_, s) => {
     let oper: any = (await qModel.findById(_.params.id));

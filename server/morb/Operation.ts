@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export const OperationSchema = new Schema({
     author: {type: Schema.Types.ObjectId, ref: '_id'},
@@ -11,3 +11,4 @@ export interface IOperation extends Document {
     name: String,
     operations: []
 }
+export const qModel = mongoose.model<IOperation>("question", OperationSchema);
