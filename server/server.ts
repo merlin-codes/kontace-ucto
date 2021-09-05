@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import mongoose, { ObjectId, Schema } from 'mongoose';
 import cors from "cors";
+import { google } from 'googleapis';
 // import request from "request";
 // import readline from 'readline';
 // import { google } from 'googleapis';
@@ -14,7 +15,10 @@ const app: express.Application = express();
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
 const PORT: number = +(process.env.PORT || 3103);
-const T_PATH =  './data/t_google.json';
+const SCOPES = ['https://www.googleapis.com/auth/classroom.courses.readonly'];
+const auth = new google.auth.OAuth2({
+    clientId: process.env.CID, clientSecret: process.env.CSECREAT, redirectUri: `http://localhost:${PORT}/auth`
+})
 
 // Schema
 const TokenSchema = new Schema({
@@ -47,7 +51,7 @@ app.use(express.static("public"));
 app.use(cors());
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
-app.use("/google", require("./cio/GClass"))
+// app.use("/google", require("./cio/GClass"))
 
 
 // set
@@ -128,6 +132,20 @@ app.post("/del", jsonBody, async (_, s) => {
         await qModel.findByIdAndRemove(oper._id);
     else return s.sendStatus(403);
     s.sendStatus(200);
+})
+
+
+app.get("/login", (req: Request, res: Response) => {
+    const loginurl = auth.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    })
+
+    res.render("login", { url: loginurl })
+})
+
+app.get("/auth", (req: Request, res: Response) => {
+    res.send("it works")
 })
 
 app.get("/back", (_, s) => s.redirect("/"));
