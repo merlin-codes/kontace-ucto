@@ -1,141 +1,47 @@
 import express, { Request, Response } from 'express';
 import mongoose, { ObjectId, Schema } from 'mongoose';
+// import jwt from "jsonwebtoken";
+import { google } from "googleapis";
 import cors from "cors";
-// import request from "request";
-// import readline from 'readline';
-// import { google } from 'googleapis';
-// import { authorize, LCourses } from "./g.apis";
-// import fs from 'fs';
 require('dotenv').config();
 
 
 // making consts
+const PORT: number = +(process.env.PORT || 3103);
 const app: express.Application = express();
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
-const PORT: number = +(process.env.PORT || 3103);
-const T_PATH =  './data/t_google.json';
-
-// Schema
-const TokenSchema = new Schema({
-    author: String,
-    token: String
-});
-interface IToken extends Document{
-    author: String,
-    token: String
-}
-const tModel = mongoose.model<IToken>("token", TokenSchema);
-
-
-const OperationSchema = new Schema({
-    author: {type: mongoose.Schema.Types.ObjectId, ref: '_id'},
-    name: String,
-    operations: []
-});
-interface IOperation extends Document {
-    author: {type: mongoose.Schema.Types.ObjectId, ref: '_id'},
-    user: String,
-    name: String,
-    operations: []
-}
-const qModel = mongoose.model<IOperation>("question", OperationSchema);
-
-
-// use
-app.use(express.static("public"));
-app.use(cors());
-app.use(bodyParser.urlencoded({extended: true}))
-app.use(bodyParser.json())
-app.use("/google", require("./cio/GClass"))
+const auth = google.auth.OAuth2;
+const client = new auth(
+    process.env.CID, 
+    process.env.CSECREAT, 
+    process.env.REDIRECT
+);
 
 
 // set
 app.set("view engine", "ejs");
+// use
+app.use(cors());
+app.use(jsonBody)
+app.use(express.static("public"));
+app.use(require("cookie-parser"));
+app.use("/", require("./cio/kontace"));
+// app.use("/g", require("./cio/classroom"));
+app.use(bodyParser.urlencoded({extended: true}))
 
 
-// routes
-app.get("/new", (_: Request, s: Response) => {
-    s.render("new");
-});
-
-app.post("/create",jsonBody, async (r: Request, s: Response) => {
-    // redirect using client
-    const {operations, token, name} = r.body;
-    const author: any = await tModel.findOne({token: token});
-    try {
-        if (author != null || mongoose.isValidObjectId(author._id)) {
-            const question = new qModel({
-                author: author._id,
-                name: name,
-                operations: operations
-            });
-            await question.save();
-            return s.sendStatus(200);
-        } else {
-            return s.sendStatus(403);
-        }
-    } catch (error) {
-        s.sendStatus(403)
-    }
-});
-
-app.get("/", async (_, s) => {
-    let operations = await qModel.find();
-    const users = await tModel.find();
-    let operation_ful = Array();
-
-    // operations.map(o => users.map(u => u._id == o.author ? o.push()))
-
-    operations.map(operation  => {
-        users.map(user => {   
-            if (user._id.toString() == (operation.author.toString())){
-                operation_ful.push({
-                    name: operation.name,
-                    user: user.author,
-                    id: operation._id
-                })
-            }
-        })
+app.get("/login", (req: Request, res: Response) => {
+    const googlelink = client.generateAuthUrl({
+        access_type: 'offline',
+        scope: process.env.S_view_courses
     })
-    s.render("index", {
-        operations: operation_ful.reverse()
-    })
+    return res.render("login", {login: googlelink})
 })
-
-app.get("/opt/:id", async (_, s) => {
-    let oper: any = (await qModel.findById(_.params.id));
-    let ope_edit: any = []
-    oper.operations.map((o: any) => {
-        ope_edit.push({...o, umd: "", ud: "", correct: false})
-    })
-    s.render("user", {
-        operations: JSON.stringify(ope_edit),
-        name: oper.name,
-        id: oper._id
-    })
-})
-
-app.post("/del", jsonBody, async (_, s) => {
-    console.log(_);
-    
-    const user: any = (await tModel.find({token: _.body.token}))[0] || {_id: ""};
-    const oper: any = (await qModel.find({_id: _.body.id}))[0];
-    console.log(user._id == oper.author);
-    console.log(user);
-    
-    if (String(user._id) ==  String(oper.author))
-        await qModel.findByIdAndRemove(oper._id);
-    else return s.sendStatus(403);
-    s.sendStatus(200);
-})
-
 app.get("/back", (_, s) => s.redirect("/"));
 
 
-app.listen(PORT, () => console.log("HIPE"));
 
 mongoose.connect(process.env.URI || "").then(() => {
-    // app.listen(PORT);
-    console.log("[SERVER]: running on "+"/"+PORT);
+    app.listen(PORT, () => console.log("[SERVER]: running on "+"http://localhost:"+PORT));
 });
