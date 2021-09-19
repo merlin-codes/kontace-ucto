@@ -104,7 +104,8 @@
                         opt: this.operations,
                         this: '<%= id %>'
                     }, (res) =>  {
-                        alert("Your answer has been saved")
+                        alert("Your answer has been saved");
+                        this.mode = "sandbox"
                     });
                 },
                 sandbox() {
