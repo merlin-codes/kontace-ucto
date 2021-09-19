@@ -112,10 +112,7 @@ app.get("/opt/:id", async (_, s) => {
     if (_.params.id.length != 24) return  s.redirect("/");
     
     let oper: any = (await operationModel.findById(_.params.id)) || null;
-    if (oper == null) return s.redirect("/");
-    
-    if (oper.useClass == true && !_.session?.googletoken) 
-        s.redirect(`/get/${_.params.id}`);
+    if (oper == null || _.session!.googletoken || _.session!.googlecode) return s.redirect("/");
     
     let ope_edit: any = []
     oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
