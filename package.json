@@ -1,6 +1,6 @@
 {
   "name": "kontace-ucto",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "server/server.ts",
   "scripts": {
@@ -42,5 +42,8 @@
   "devDependencies": {
     "@types/request": "^2.48.7",
     "nodemon": "^2.0.12"
+  },
+  "engines": {
+    "node": "14.x"
   }
 }

@@ -245,14 +245,13 @@ app.post("/nope", async (req: Request, res: Response) => {
         const classroom = google.classroom({version: 'v1', auth: client});
 
         // cannot find submission 404 
-        // set userid back to session id /*String(req.session!.myid)*/
+        // set userid back to test id /*'107300509570721804058'*/
         const assigment = (await classroom.courses.courseWork.studentSubmissions.list({
-                userId: '107300509570721804058',
+                userId: String(req.session!.myid),
                 states: ['CREATED'],
                 courseId: String(original!.classroom), 
                 courseWorkId: String(original!.courseId)
             })).data.studentSubmissions;
-
         if (!assigment) return;
 
         const mark = Math.floor((correct / all) * 100) || 0;
