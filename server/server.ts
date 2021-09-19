@@ -24,7 +24,7 @@ const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
 const PORT: number = +(process.env.PORT || 3103);
 const HTP = "https"
-const SERVER = `${HTP}://kontace-ucto.herokuapp.com/:${PORT}`
+const SERVER = `${HTP}://kontace-ucto.herokuapp.com`
 // const SERVER = `${HTP}://localhost:${PORT}`
 const SCOPES = [
     'openid',
