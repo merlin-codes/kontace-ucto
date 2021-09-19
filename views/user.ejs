@@ -7,36 +7,88 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-    <title>jmeno: kontace.jmeno</title>
+    <title><%= name %></title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="/user.css">
 </head>
-<body class="bg-dark text-white text-center">
-    <div id="app">
-        <table class="table table-hover table-dark container my-5">
+<body class="text-center">
+    <%- include("accounts") %>
+    <div id="app" v-bind:class="{'bg-dark' : darkmode, 'text-white' : darkmode}">
+        <div class="pt-5"></div>
+        <table class="table table-hover container py-5" v-bind:class="{'table-dark': darkmode}">
             <thead>
-                <tr><th></th><th colspan="3"><h4 class="text-center">Jmeno: {{ name }}</h4></th><th></th></tr>
-                <tr><th>index</th><th>Jmeno</th><th>Castka</th><th>MD</th><th>D</th></tr>
+                <tr>
+                    <th></th>
+                    <th colspan="3">
+                        <h4 class="text-center">
+                            {{ name }}<span class="text-warning" v-if="mode == 'sandbox' || mode == 'check'"> #Sandbox</span>
+                            <button class="btn btn-info ms-5" @click="changemode">
+                                <div v-if="darkmode">Day</div>
+                                <div v-if="!darkmode">Night</div>
+                            </button>
+                        </h4>
+                    </th>
+                    <th></th>
+                </tr>
+                <tr><th>Číslo</th><th>Jméno</th><th>Častka</th><th>MD</th><th>D</th>
+              </tr>
             </thead>
             <tbody>
                 <tr v-for="(operation, i) in operations">
-                    <td class="col-1"><p>{{i+1}}</p></td>
-                    <td class="col-5"><p>{{operation.name}}</p></td>
-                    <td><p>{{operation.cost}}</p></td>
-                    <td class="col-1"><p><input type="text" class="form-control bg-dark text-white text-center" v-model="operation.umd"></p></td>
-                    <td class="col-1"><p><input type="text" class="form-control bg-dark text-white text-center"  v-model="operation.ud"></p></td>
-                    <td class="col-1 text-danger fs-4" ><p v-if="!operation.correct">!</p></td>
+                    <td class="col-1"><p>{{ i+1 }}</p></td>
+                    <td class="col-5"><p>{{ operation.name }}</p></td>
+                    <td><p>{{ operation.cost }}</p></td>
+                    <td class="col-1">
+                        <div v-if="(mode == 'sended' || mode == 'check')&& operation.correct">{{ operation.umd }}</div>
+                        <div v-if="(mode == 'sended' || mode == 'check') && !operation.correct">
+                            <s v-if="operation.umd" class="text-danger">{{ operation.umd }}</s>
+                            <span v-bind:class="{ 'text-danger': !operation.umd }">{{ operation.md }}</span>
+                        </div>
+
+                        <input type="text" list="account-UCTO" maxlength="3" class="form-control text-center" v-model="operation.umd"
+                            v-if="(mode != 'sended' || mode == 'check') && mode != 'check'"
+                            v-bind:class="{
+                                    'text-white' : darkmode, 'bg-dark' : darkmode, 'text-dark': !darkmode,'bg-white' : !darkmode
+                            }">
+                    </td>
+                    <td class="col-1">
+                        <div v-if="(mode == 'sended' || mode == 'check') && operation.correct">{{ operation.ud }}</div>
+                        <div v-if="(mode == 'sended' || mode == 'check') && !operation.correct">
+                            <s v-if="operation.ud" class="text-danger">{{ operation.ud }}</s>
+                            <span v-bind:class="{ 'text-danger': !operation.ud }">{{ operation.d }}</span>
+                        </div>
+                        <input type="text" list="account-UCTO" maxlength="3" class="form-control text-center" v-model="operation.ud"
+                            v-if="(mode != 'sended' || mode == 'check') && mode != 'check'"
+                            v-bind:class="{
+                                    'text-white' : darkmode, 'bg-dark' : darkmode, 'text-dark': !darkmode,'bg-white' : !darkmode
+                            }">
+                    </td>
+                    <td class="col-1 text-danger fs-4" ><span v-if="!operation.correct">!</span></td>
                 </tr>
             </tbody>
         </table>
-        <button class="btn btn-success" @click="verify">Opravit</button>
+        <div class="pb-4">
+            <button v-if="mode == 'first'" class="btn btn-success" @click="verify">Opravit</button>
+            <button v-if="mode == 'first'" class="btn btn-primary" @click="send">Odeslat</button>
+            <button v-if="mode == 'sandbox' || mode == 'check'"
+                class="btn btn-primary" @click="checkit">
+                    <span v-if="mode == 'sandbox'">Check it</span>
+                    <span v-if="mode == 'check'">Try again</span>
+                </button>
+            <button v-if="mode == 'sended'"
+                class="btn btn-warning" @click="sandbox">Sandbox</button>
+        </div>
     </div>
     <script>
+        const rulrl = "/home-world";
         new Vue({
             el: "#app",
             data: {
                 name: '<%- name %>',
                 operations: JSON.parse('<%- operations %>'),
-                id: 0,
-                defaults: localStorage.getItem("O-<%= id %>") || "0"
+                defaults: localStorage.getItem("O-<%= id %>") || "0",
+                mode: "first",
+                darkmode: true
             },
             methods: {
                 verify() {
@@ -44,27 +96,67 @@
                     this.operations.map(o => {
                         if (o.md == o.umd && o.d == o.ud) o.correct = true
                     })
+                },
+                send() {
+                    this.verify();
+                    // this.mode = "sended";
+                    $.post(`/nope`, {
+                        opt: this.operations,
+                        this: '<%= id %>'
+                    }, (res) =>  {
+                        alert("Your answer has been saved")
+                    });
+                },
+                sandbox() {
+                    if (this.mode == "sended") this.mode = "sandbox";
+                    localStorage.setItem("mod-<%= id %>", this.mode)
+                },
+                checkit() {
+                    if (this.mode == "sandbox") this.mode = "check";
+                    else this.mode = "sandbox";
+                    localStorage.setItem("mod-<%= id %>", this.mode)
+                    this.verify()
+                },
+                changemode() {
+                    this.darkmode = !this.darkmode;
+                },
+                areyoucheating() {
+                    if (this.mode != localStorage.getItem("mod-<%= id %>") && this.mode != "load")
+                        localStorage.setItem("mod-<%= id %>", this.mode);
                 }
             },
             watch: {
                 operations: {
                     handler: function (val, old) {
                         localStorage.setItem("O-<%= id %>", JSON.stringify(this.operations));
-                        if (this.defaults != "1") this.defaults = "1";
+                        localStorage.setItem("mod-<%= id %>", "first")
                     }, deep: true
                 },
-                defaults: {
-                    handler: function (val, old) {
-                        localStorage.setItem("D-<%= id %>", this.defaults)
-                        console.log("USER edited this")
-                    }
+                mode: {
+                  handler: function (val, old) {
+                    localStorage.setItem("mod-<%= id %>", this.mode);
+                    if (this.mode == "load") this.mode = "first"
+                  }
                 }
             },
             mounted: function () {
-                let $THIS = this;
-                console.log("<%= id %>")
-                if ($THIS.defaults != "0")
-                    $THIS.operations = JSON.parse(localStorage.getItem("O-<%= id %>"));
+                let t = this;
+                t.mode = localStorage.getItem("mod-<%= id %>") || "load";
+                    // localStorage.setItem("mod-<%= id %>", "first");
+                // else 
+                if (localStorage.getItem("O-<%= id %>") != null)
+                    t.operations = JSON.parse(localStorage.getItem("O-<%= id %>"));
+
+                const r = t.operations[0].cost;
+                if (!isNaN(r) && !isNaN(parseFloat(r)))
+                  t.operations.map(o => {
+                    o.cost = new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      maximumFractionDigits: 0
+                    }).format(o.cost).replace(/,/g, " ");
+                  });
+                setInterval(t.areyoucheating, 1000)
             }
         })
     </script>

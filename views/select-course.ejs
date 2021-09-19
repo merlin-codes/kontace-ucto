@@ -21,6 +21,12 @@
                 <option value="<%= course.id %>" <%= id == 0 ? 'selected': '' %>><%= course.name %></option>
             <% }) %>
         </select>
+        <h5>Ukol: </h5>
+        <select name="optid" id="optID" class="form-select bg-dark text-white mb-3">
+            <% opt.map( (o, id) => { %>
+                <option value="<%= o.id %>" <%= id == 0 ? 'selected': '' %>><%= o.name %></option>
+            <% }) %>
+        </select>
         <button class="btn btn-primary" type="submit">Pridat</button>
     </form>
 </body>

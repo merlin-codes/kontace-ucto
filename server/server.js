@@ -33,12 +33,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importStar(require("mongoose"));
+const cors_1 = __importDefault(require("cors"));
+const googleapis_1 = require("googleapis");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 require('dotenv').config();
 // making consts
-const app = express_1.default();
-const PORT = +(process.env.PORT || 3103);
+const app = (0, express_1.default)();
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
+const PORT = +(process.env.PORT || 3103);
+const SCOPES = [
+    'https://www.googleapis.com/auth/classroom.coursework.me',
+    'https://www.googleapis.com/auth/classroom.courses.readonly',
+    'https://www.googleapis.com/auth/classroom.coursework.students'
+];
+const auth = new googleapis_1.google.auth.OAuth2({
+    clientId: process.env.CID, clientSecret: process.env.CSECREAT, redirectUri: `http://localhost:${PORT}/auth`
+});
+const ftokens = "ahoj jak se mas neni tento svet tak nadherny a taky uzasny lidi tohle muze stvat ale proc ne tebe".split(" ");
 // Schema
 const TokenSchema = new mongoose_1.Schema({
     author: String,
@@ -51,10 +63,18 @@ const OperationSchema = new mongoose_1.Schema({
     operations: []
 });
 const qModel = mongoose_1.default.model("question", OperationSchema);
+// use
+app.use((0, cors_1.default)());
+app.use(bodyParser.json());
+app.use(express_1.default.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
+// Creating session
+app.use(require("cookie-session")({
+    name: "cokkies",
+    keys: ['key1', 'key2']
+}));
 // set
 app.set("view engine", "ejs");
-// use
-app.use(express_1.default.static("public"));
 // routes
 app.get("/new", (_, s) => {
     s.render("new");
@@ -82,6 +102,9 @@ app.post("/create", jsonBody, (r, s) => __awaiter(void 0, void 0, void 0, functi
     }
 }));
 app.get("/", (_, s) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (!((_a = _.session) === null || _a === void 0 ? void 0 : _a.googletoken))
+        return s.redirect("/login");
     let operations = yield qModel.find();
     const users = yield tModel.find();
     let operation_ful = Array();
@@ -102,15 +125,23 @@ app.get("/", (_, s) => __awaiter(void 0, void 0, void 0, function* () {
     });
 }));
 app.get("/opt/:id", (_, s) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c;
     let oper = (yield qModel.findById(_.params.id));
     let ope_edit = [];
     oper.operations.map((o) => {
         ope_edit.push(Object.assign(Object.assign({}, o), { umd: "", ud: "", correct: false }));
     });
-    s.render("user", {
-        operations: JSON.stringify(ope_edit),
-        name: oper.name,
-        id: oper._id
+    if (!((_b = _.session) === null || _b === void 0 ? void 0 : _b.id))
+        _.session.id = ftokens[Math.floor(Math.random() * ftokens.length)];
+    bcrypt_1.default.hash((_c = _.session) === null || _c === void 0 ? void 0 : _c.id, 10, (e1, response) => {
+        if (e1)
+            return s.send("Bcrypt module is broken " + e1);
+        return s.render("user", {
+            operations: JSON.stringify(ope_edit),
+            name: oper.name,
+            token: response,
+            id: oper._id
+        });
     });
 }));
 app.post("/del", jsonBody, (_, s) => __awaiter(void 0, void 0, void 0, function* () {
@@ -125,8 +156,67 @@ app.post("/del", jsonBody, (_, s) => __awaiter(void 0, void 0, void 0, function*
         return s.sendStatus(403);
     s.sendStatus(200);
 }));
-app.get("/back", (_, s) => s.redirect("/"));
+app.get("/login", (req, res) => {
+    const loginurl = auth.generateAuthUrl({
+        access_type: 'offline',
+        scope: SCOPES,
+    });
+    res.render("login", { url: loginurl });
+});
+app.get("/auth", (req, res) => {
+    const code = req.query.code || "";
+    auth.getToken(String(code), (err, token) => {
+        if (err)
+            console.error(`Something wrong with token: ${err}`);
+        // const user = auth.getTokenInfo
+        console.log(auth);
+        req.session = Object.assign(Object.assign({}, req.session), { googletoken: token });
+        res.redirect("/");
+    });
+});
+app.get("/back", (_, s) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    auth.setCredentials((_d = _.session) === null || _d === void 0 ? void 0 : _d.googletoken);
+    let userinfo;
+    const classroom = googleapis_1.google.classroom({ version: "v1", auth });
+    googleapis_1.google.oauth2({ auth, version: "v2" }).userinfo.get((err, res) => err ? console.error(err) : userinfo = res);
+    console.log(userinfo);
+    let courses;
+    classroom.courses.list({
+        teacherId: "me",
+        courseStates: ["ACTIVE"]
+    }, (e, res) => {
+        if (e)
+            console.error(`Error i courses ${e}`);
+        courses = res === null || res === void 0 ? void 0 : res.data.courses;
+        if (courses && courses.length) {
+            s.render("select-course", {
+                courses: courses
+            });
+            // s.send("You have some courses here");
+        }
+        else {
+            // s.send("I dont find any courses");
+            s.redirect("/login");
+        }
+    });
+    // s.redirect("/");
+}));
+app.post("/course", jsonBody, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(req.body.courseid);
+    const classroom = googleapis_1.google.classroom({ version: "v1", auth });
+    const coureswork = yield classroom.courses.courseWork.create({
+        courseId: req.body.courseid,
+        fields: "Random Text"
+    });
+    // list({
+    //     courseId: req.body.courseid
+    // }); // courses.get({id: req.body.courseid})
+    console.log(coureswork);
+    res.redirect("/back");
+}));
+app.listen(PORT, () => console.log("HIPE"));
 mongoose_1.default.connect(process.env.URI || "").then(() => {
-    app.listen(PORT);
-    console.log("[SERVER]: running on " + "/" + PORT);
+    // app.listen(PORT);
+    console.log("[SERVER]: running on http://localhost:" + PORT);
 });

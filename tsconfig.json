@@ -1,5 +1,7 @@
 {
+  "exclude": ["node_modules", "client-new"],
   "compilerOptions": {
+    "resolveJsonModule": true,
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 
     /* Basic Options */
