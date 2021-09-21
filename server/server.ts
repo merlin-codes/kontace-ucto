@@ -126,6 +126,7 @@ app.get("/opt/:id", async (_, s) => {
     oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
 
     if (oper.classroom != "") {
+        if (!(req.session!.googletoken)) s.redirect("/?no-token-no-life")
         client.setCredentials(_.session?.googletoken);
         const classroom = google.classroom({version: "v1", "auth": client});
         classroom.courses.list({
