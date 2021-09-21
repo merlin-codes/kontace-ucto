@@ -11,11 +11,9 @@ require('dotenv').config();
 
 /*
 
-    Maybe save user data with token to Database for effectivity
+    Made by Miloslav Stekrt
 
 */
-
-
 
 // making consts
 const ftokens = "name the random guy from the store ixd lolo".split(" ")
@@ -25,7 +23,10 @@ const jsonBody = bodyParser.json();
 const PORT: number = +(process.env.PORT || 3103);
 const HTP = "https"
 const SERVER = `${HTP}://kontace-ucto.herokuapp.com`
+
+// for local server need enable this
 // const SERVER = `${HTP}://localhost:${PORT}`
+
 const SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/classroom.coursework.me',
