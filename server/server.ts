@@ -133,7 +133,7 @@ app.get("/opt/:id", async (_, s) => {
         }, (e, r) => {
             if (e) console.error(e);
             let courses = r?.data.courses?.filter(course => course.id == oper.classroom);
-            if (courses && courses!.length < 1)
+            if (courses && courses!.length == 1)
                 return s.redirect("/?err=your-not-in-class")
             return s.render("user", {
                 operations: JSON.stringify(ope_edit),
