@@ -12,11 +12,11 @@ require('dotenv').config();
 /*
 
     Made by Miloslav Stekrt
-
+    Let's create something new :D
+  
 */
 
 // making consts
-const ftokens = "name the random guy from the store ixd lolo".split(" ")
 const app: express.Application = express();
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
@@ -28,7 +28,6 @@ const SERVER = `${HTP}://kontace-ucto.herokuapp.com`
 // const SERVER = `${HTP}://localhost:${PORT}`
 
 const SCOPES = [
-    'openid',
     'https://www.googleapis.com/auth/classroom.coursework.me',
     'https://www.googleapis.com/auth/classroom.courses.readonly',
     'https://www.googleapis.com/auth/classroom.coursework.students',
@@ -56,17 +55,17 @@ app.use(require("cookie-session")({
 // set
 app.set("view engine", "ejs");
 
-// new one
+
+// Create new 
 app.get("/new", (_: Request, s: Response) => s.render("new"));
 app.post("/create", jsonBody, async (req: Request, res: Response) => {
-    console.log(req.body);
-    
     const { operations, name } = req.body;
     client.setCredentials(req.session!.googletoken)
 
     await new operationModel({
         author: req.session?.googletoken,
-        author_id: (await google.classroom({version: 'v1', auth: client}).userProfiles.get({userId: "me"})).data.id,
+        author_id: (await google.classroom({version: 'v1', auth: client})
+                        .userProfiles.get({userId: "me"})).data.id,
         name: name,
         classroom: "",
         clasname: "",
@@ -88,7 +87,7 @@ app.get("/", async (req: Request, res: Response) => {
     });
 })
 
-// Generating new token 
+// Generation of new OAuth token 
 app.get("/auth", (req: Request, res: Response) => {
     const code = req.query.code || req.session?.googlecode;
     
@@ -108,12 +107,20 @@ app.get("/auth", (req: Request, res: Response) => {
     })
 })
 
+
+app.get("/del/:id", async (req: Request, res: Response) => {
+    const operation = await operationModel.findById(req.params.id);
+    if (operation?.author_id == req.session?.myid)
+        await operationModel.remove(operation);
+    res.redirect("/");
+})
+
 // check if user is in students of course if not redirect 'no-access page'
 app.get("/opt/:id", async (_, s) => {
     if (_.params.id.length != 24) return  s.redirect("/");
     
     let oper: any = (await operationModel.findById(_.params.id)) || null;
-    if (oper == null || !(_.session!.googletoken) || !(_.session!.googlecode)) return s.redirect("/");
+    if (oper == null) return s.redirect("/");
     
     let ope_edit: any = []
     oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
@@ -144,14 +151,8 @@ app.get("/opt/:id", async (_, s) => {
         });
 });
 
-app.get("/del/:id", async (req: Request, res: Response) => {
-    const operation = await operationModel.findById(req.params.id);
-    if (operation?.author_id == req.session?.myid)
-        await operationModel.remove(operation);
-    res.redirect("/");
-})
 
-// middleware between course and home
+// middleware between course and home(
 app.get("/back", async (req: Request, res: Response) => {
     client.setCredentials(req.session?.googletoken);
     
@@ -212,9 +213,8 @@ app.post("/course", jsonBody, async (req: Request, res: Response) => {
     opt!.classroom = req.body.courseid;
     opt!.classname = name;
     opt!.courseId = coureswork.data.id!;
+    
     await opt!.save()
-    // need run this
-    console.log(coureswork);
     res.redirect("/")
 })
 
@@ -272,34 +272,36 @@ app.post("/nope", async (req: Request, res: Response) => {
 app.get("/privacy", (req, res) => res.render("privacy"))
 app.get("/terms", (req, res) => res.render("terms"))
 
+
 // API Request - remove before production version
 app.get("/getall", async (req, res) => res.send(await (operationModel.find())))
-app.get("/getcourses", async (req, res) => {
-    client.setCredentials(req.session!.googletoken);
-
-    const clas = google.classroom({version: "v1", auth: client}).courses.list({
-        teacherId: "me",
-        courseStates: ["ACTIVE"]
-    }, (e, response) => {
-        if (e) console.error(e);
-        
-        console.log(response?.data.courses);
-        res.redirect("/")
-    })
-    
-})
 app.get("/logout", async (req, res) => {req.session = null; res.redirect("/")})
-// get operations by id
 app.get("/get/:id", async (r, s) => s.send(await (operationModel.findById(r.params.id))))
-// remove classroom connection
-app.get("/remove/classroom/:id", async (req, res) => res.send(await (operationModel.updateOne({"_id": req.params.id}, {classroom: ""}))))
-// getting code from localstorage
+app.get("/remove/classroom/:id", async (req, res) => res.send(
+    await (operationModel.updateOne({"_id": req.params.id}, {classroom: ""}))
+));
+
+// app.get("/getcourses", async (req, res) => {
+//     client.setCredentials(req.session!.googletoken);
+//     const clas = google.classroom({version: "v1", auth: client}).courses.list({
+//         teacherId: "me",
+//         courseStates: ["ACTIVE"]
+//     }, (e, response) => {
+//         if (e) console.error(e);
+//         console.log(response?.data.courses);
+//         res.redirect("/")
+//     });
+// });
+
+
+
+// Manipulation with Gcode from login
 app.post("/get-code", jsonBody, (req, res) => {
     req.session!.googlecode = req.body.code;
     return res.send("Code saved");
 })
-app.get("/save-token", (req, res) => res.render("local", { code: req.session!.googlecode }))
-app.get("/show-token", (req, res) => res.send(req.session?.googletoken))
+app.get("/save-token", (req, res) => res.render("local", { code: req.session!.googlecode }));
+app.get("/show-token", (req, res) => res.send(req.session?.googletoken));
 
 
 app.listen(PORT, () => console.log("[SERVER]: running on " + SERVER));
