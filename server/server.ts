@@ -183,7 +183,6 @@ app.get("/back", async (req: Request, res: Response) => {
             return res.redirect("/");
         })
     })
-
 });
 
 // connecting classroom with operation and create coursework
@@ -281,6 +280,11 @@ app.get("/get/:id", async (r, s) => s.send(await (operationModel.findById(r.para
 app.get("/remove/classroom/:id", async (req, res) => res.send(
     await (operationModel.updateOne({"_id": req.params.id}, {classroom: ""}))
 ));
+
+app.get("/meme", async (req, res) => {
+    const memes = require("random-memes");
+    memes.random().then((meme: any) => res.render("meme", {meme}))
+})
 
 // app.get("/getcourses", async (req, res) => {
 //     client.setCredentials(req.session!.googletoken);
