@@ -41,33 +41,11 @@
                             <span class="mx-5 my-1"><%= operation.name.charAt(0).toUpperCase() + operation.name.slice(1) %></span>
                             <div>
                                 <small>
-                                    <small class="mx-4"><%= operation.classname ? operation.classname: "bez třídu :(" %></small>
+                                    <small class="mx-4"><%= operation.classname ? operation.classname: "&times;" %></small>
                                 </small>
                             </div>
                         </h3>
                     </a>
-                    <script>
-                        const oper_<%= operation.id %> = async() => {
-                            let token = prompt('Vas token...')
-                            let response;
-                            try {
-                                response = await $.post({
-                                    url: '/del',
-                                    headers: {'Content-Type': 'application/json'},
-                                    data: JSON.stringify({
-                                        token: token,
-                                        id: '<%= operation.id %>'
-                                    })
-                                });
-                                alert('Kontace byla odstranena.');
-                                window.location.href="/back"
-                            } catch (error) {
-                                if(error.status == 403) alert('K odstraneni kontace je treba autoruv klic, ktery zadan nebyl.')
-                                if(error.status == 404) alert('Kontace nebyla nalezena')
-                            }
-                        };
-                    </script>
-                    <!-- <a class="btn btn-danger my-3 ms-2 px-3 fs-3" href='Javascript: oper_<%= operation.id %>()' >&#128501;</a> -->
                     <% if (typeof operation.author_id != 'undefined' && operation.author_id == code) { %>
                         <a class="btn btn-danger my-3 ms-2 px-3 fs-3" href="/del/<%= operation.id %>">&#128501;</a>
                     <% } %>
