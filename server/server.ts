@@ -271,9 +271,10 @@ app.post("/nope", async (req: Request, res: Response) => {
 // google blbosti
 app.get("/privacy", (req, res) => res.render("privacy"))
 app.get("/terms", (req, res) => res.render("terms"))
-app.get("/map", (req, res) =>
-  res.sendFile("/sitemap.xml")
-);
+app.get("/map", (req, res) =>{
+  res.type('application/xml');
+  res.sendFile("public/sitemap.xml")
+});
 
 
 // API Request - remove before production version
