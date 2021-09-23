@@ -13,7 +13,7 @@ require('dotenv').config();
 
     Made by Miloslav Stekrt
     Let's create something new :D
-  
+
 */
 
 // making consts
@@ -56,7 +56,7 @@ app.use(require("cookie-session")({
 app.set("view engine", "ejs");
 
 
-// Create new 
+// Create new
 app.get("/new", (_: Request, s: Response) => s.render("new"));
 app.post("/create", jsonBody, async (req: Request, res: Response) => {
     const { operations, name } = req.body;
@@ -79,7 +79,7 @@ app.post("/create", jsonBody, async (req: Request, res: Response) => {
 app.get("/", async (req: Request, res: Response) => {
     let operations = await operationModel.find();
 
-    res.render("index", { 
+    res.render("index", {
         operations: operations.reverse(),
         auth: req.session?.googletoken,
         code: req.session?.myid,
@@ -87,10 +87,10 @@ app.get("/", async (req: Request, res: Response) => {
     });
 })
 
-// Generation of new OAuth token 
+// Generation of new OAuth token
 app.get("/auth", (req: Request, res: Response) => {
     const code = req.query.code || req.session?.googlecode;
-    
+
     client.getToken(String(code), async (err, token) => {
         if (err) console.error(`Something wrong with token: ${err}`);
         req.session!.googletoken = token;
@@ -98,7 +98,7 @@ app.get("/auth", (req: Request, res: Response) => {
         const classroom = google.classroom({version: "v1", auth: client})
 
         const userinfo = await classroom.userProfiles.get({userId: "me"})
-        
+
         req.session!.myid = userinfo.data.id;
         req.session!.name = userinfo.data.name;
 
@@ -118,10 +118,10 @@ app.get("/del/:id", async (req: Request, res: Response) => {
 // check if user is in students of course if not redirect 'no-access page'
 app.get("/opt/:id", async (_, s) => {
     if (_.params.id.length != 24) return  s.redirect("/");
-    
+
     let oper: any = (await operationModel.findById(_.params.id)) || null;
     if (oper == null) return s.redirect("/");
-    
+
     let ope_edit: any = []
     oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
 
@@ -143,7 +143,7 @@ app.get("/opt/:id", async (_, s) => {
                 class: true
             });
         })
-    } else 
+    } else
         return s.render("user", {
             operations: JSON.stringify(ope_edit),
             name: oper.name,
@@ -156,7 +156,7 @@ app.get("/opt/:id", async (_, s) => {
 // middleware between course and home(
 app.get("/back", async (req: Request, res: Response) => {
     client.setCredentials(req.session?.googletoken);
-    
+
     let userinfo: string | GaxiosResponse<oauth2_v2.Schema$Userinfo>;
 
     const classroom = google.classroom({version: "v1", auth: client});
@@ -189,7 +189,7 @@ app.get("/back", async (req: Request, res: Response) => {
 app.post("/course", jsonBody, async (req: Request, res: Response) => {
     console.log(req.body);
     if (!req.session?.googletoken) return res.redirect("/back")
-    
+
     client.setCredentials(req.session?.googletoken);
 
     const classroom = google.classroom({version: "v1", auth: client});
@@ -213,7 +213,7 @@ app.post("/course", jsonBody, async (req: Request, res: Response) => {
     opt!.classroom = req.body.courseid;
     opt!.classname = name;
     opt!.courseId = coureswork.data.id!;
-    
+
     await opt!.save()
     res.redirect("/")
 })
@@ -234,28 +234,28 @@ app.post("/nope", async (req: Request, res: Response) => {
 
     console.log(req.body.opt);
     console.log(correct);
-    
+
     client.setCredentials(original!.author);
     client.refreshAccessToken(async (err, token) => {
         if (err) console.error(err);
         console.log(token);
-        
+
         const classroom = google.classroom({version: 'v1', auth: client});
 
-        // cannot find submission 404 
+        // cannot find submission 404
         // set userid back to test id /*'107300509570721804058'*/
         const assigment = (await classroom.courses.courseWork.studentSubmissions.list({
                 userId: String(req.session!.myid),
                 states: ['CREATED'],
-                courseId: String(original!.classroom), 
+                courseId: String(original!.classroom),
                 courseWorkId: String(original!.courseId)
             })).data.studentSubmissions;
         if (!assigment) return;
 
         const mark = Math.floor((correct / all) * 100) || 0;
         const propably = (await classroom.courses.courseWork.studentSubmissions.patch({
-            courseWorkId: String(original!.courseId), courseId: String(original!.classroom), 
-            id: String(assigment![0].id), updateMask: "assignedGrade,draftGrade", 
+            courseWorkId: String(original!.courseId), courseId: String(original!.classroom),
+            id: String(assigment![0].id), updateMask: "assignedGrade,draftGrade",
             requestBody: {
                 assignedGrade: mark,
                 draftGrade: mark
@@ -271,6 +271,9 @@ app.post("/nope", async (req: Request, res: Response) => {
 // google blbosti
 app.get("/privacy", (req, res) => res.render("privacy"))
 app.get("/terms", (req, res) => res.render("terms"))
+app.get("/map", (req, res) =>
+  res.sendFile("./public/sitemap.xml")
+);
 
 
 // API Request - remove before production version
