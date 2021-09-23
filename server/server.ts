@@ -273,7 +273,7 @@ app.get("/privacy", (req, res) => res.render("privacy"))
 app.get("/terms", (req, res) => res.render("terms"))
 app.get("/map", (req, res) =>{
   res.type('application/xml');
-  res.sendFile("./../public/sitemap.xml")
+  res.sendFile(__dirname+"/public/sitemap.xml")
 });
 
 
