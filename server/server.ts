@@ -272,7 +272,7 @@ app.post("/nope", async (req: Request, res: Response) => {
 app.get("/privacy", (req, res) => res.render("privacy"))
 app.get("/terms", (req, res) => res.render("terms"))
 app.get("/map", (req, res) =>
-  res.sendFile("./public/sitemap.xml")
+  res.sendFile("/sitemap.xml")
 );
 
 
