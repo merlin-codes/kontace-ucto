@@ -271,8 +271,8 @@ app.post("/nope", async (req: Request, res: Response) => {
 // google blbosti
 app.get("/privacy", (req, res) => res.render("privacy"))
 app.get("/terms", (req, res) => res.render("terms"))
-app.get("/map", (req, res) =>{
-  res.type('application/xml');
+app.get("/sitemap.xml", (req, res) =>{
+  res.header('Content-Type', 'text/xml');
   res.sendFile("/sitemap.xml", {root: '.'})
 });
 
