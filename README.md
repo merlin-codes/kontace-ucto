@@ -1,9 +1,13 @@
 # Project kontace-ucto
 Urceny pro tvorbu kontaci na ucetnictvi
 
-## instalace
-MongoDB, Node-ts, Vue, React
+## Pouzite technologie
+- MongoDB 
+- Node-ts
+- Vue
+- React
 
+## instalace
 stahnout kod
 zmenit server na server na kterem tento projekt bezi a do souboru env ulozit pripojovaci informace 
 
