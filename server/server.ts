@@ -118,15 +118,15 @@ app.get("/del/:id", async (req: Request, res: Response) => {
 // check if user is in students of course if not redirect 'no-access page'
 app.get("/opt/:id", async (_, s) => {
     if (_.params.id.length != 24) return  s.redirect("/");
-
+    
     let oper: any = (await operationModel.findById(_.params.id)) || null;
     if (oper == null) return s.redirect("/");
-
+    
     let ope_edit: any = []
     oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
-
+    
     if (oper.classroom != "") {
-        if (!(_.session!.googletoken)) s.redirect("/?no-token-no-life")
+        if (!(_.session!.googletoken)) return s.redirect("/?no-token-no-life");
         client.setCredentials(_.session?.googletoken);
         const classroom = google.classroom({version: "v1", "auth": client});
         classroom.courses.list({
