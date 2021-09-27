@@ -48,8 +48,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Creating session
 app.use(require("cookie-session")({
-    name: "cokkies",
-    keys: ['key1', 'key2']
+    name: "tridentonezero",
+    keys: ['fuckinggodisdeaddearnewgod', 'helpmenowyouknowyouareidiot']
 }))
 
 // set
@@ -223,22 +223,16 @@ app.post("/nope", async (req: Request, res: Response) => {
     let correct = 0;
 
     let opt = req.body.opt;
-    await opt.map((o: {correct: string}) => {
-        if (o.correct == "true") correct++
-    })
+    await opt.map((o: {correct: string}) => if (o.correct == "true") correct++)
 
     let id = req.body.this;
 
     const original = await operationModel.findById(id);
     const all = original?.operations?.length || 0;
 
-    console.log(req.body.opt);
-    console.log(correct);
-
     client.setCredentials(original!.author);
     client.refreshAccessToken(async (err, token) => {
         if (err) console.error(err);
-        console.log(token);
 
         const classroom = google.classroom({version: 'v1', auth: client});
 
@@ -261,8 +255,6 @@ app.post("/nope", async (req: Request, res: Response) => {
                 draftGrade: mark
             }
         }))
-
-        console.log(propably);
     })
     res.send("success");
 })
@@ -278,31 +270,16 @@ app.get("/sitemap.xml", (req, res) =>{
 
 
 // API Request - remove before production version
-app.get("/getall", async (req, res) => res.send(await (operationModel.find())))
 app.get("/logout", async (req, res) => {req.session = null; res.redirect("/")})
-app.get("/get/:id", async (r, s) => s.send(await (operationModel.findById(r.params.id))))
-app.get("/remove/classroom/:id", async (req, res) => res.send(
-    await (operationModel.updateOne({"_id": req.params.id}, {classroom: ""}))
-));
-
 app.get("/meme", async (req, res) => {
     const memes = require("random-memes");
     memes.random().then((meme: any) => res.render("meme", {meme}))
 })
 
-// app.get("/getcourses", async (req, res) => {
-//     client.setCredentials(req.session!.googletoken);
-//     const clas = google.classroom({version: "v1", auth: client}).courses.list({
-//         teacherId: "me",
-//         courseStates: ["ACTIVE"]
-//     }, (e, response) => {
-//         if (e) console.error(e);
-//         console.log(response?.data.courses);
-//         res.redirect("/")
-//     });
-// });
-
-
+app.get("/get/:id", async (r, s) => s.send(await (operationModel.findById(r.params.id))))
+app.get("/remove/classroom/:id", async (req, res) => res.send(
+    await (operationModel.updateOne({"_id": req.params.id}, {classroom: ""}))
+));
 
 // Manipulation with Gcode from login
 app.post("/get-code", jsonBody, (req, res) => {
