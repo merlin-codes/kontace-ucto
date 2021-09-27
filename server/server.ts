@@ -60,7 +60,9 @@ app.set("view engine", "ejs");
 app.get("/new", (_: Request, s: Response) => s.render("new"));
 app.post("/create", jsonBody, async (req: Request, res: Response) => {
     const { operations, name } = req.body;
-    client.setCredentials(req.session!.googletoken)
+    if (req.session!.googletoken) 
+      client.setCredentials(req.session!.googletoken)
+    else return res.redirect("/new")
 
     await new operationModel({
         author: req.session?.googletoken,
