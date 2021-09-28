@@ -2,9 +2,8 @@ import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import cors from "cors";
 import { google, oauth2_v2 } from 'googleapis';
-import { Operation } from './fuckit/mod/Operation';
-import { GaxiosResponse } from 'gaxios';
-import { version } from 'os';
+import { Operation, IOperation } from './fuckit/mod/Operation';
+import { refreshIt } from './fuckit/useless';
 
 require('dotenv').config();
 
@@ -21,17 +20,15 @@ const app: express.Application = express();
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
 const PORT: number = +(process.env.PORT || 3103);
-const HTP = "https"
-const SERVER = `${HTP}://kontace-ucto.herokuapp.com`
+let SERVER = `https://kontace-ucto.herokuapp.com`;
 
-// for local server need enable this
-// const SERVER = `${HTP}://localhost:${PORT}`
+if (process.env.ServerType == "local")
+    SERVER = `http://localhost:${PORT}`
 
 const SCOPES = [
-    'https://www.googleapis.com/auth/classroom.coursework.me',
     'https://www.googleapis.com/auth/classroom.courses.readonly',
-    'https://www.googleapis.com/auth/classroom.coursework.students',
-    'https://www.googleapis.com/auth/classroom.rosters.readonly'
+    'https://www.googleapis.com/auth/classroom.rosters.readonly',
+    'https://www.googleapis.com/auth/classroom.coursework.students'
 ];
 const client = new google.auth.OAuth2({
     clientId: process.env.CID, clientSecret: process.env.CSECREAT, redirectUri: `${SERVER}/auth`
@@ -60,9 +57,12 @@ app.set("view engine", "ejs");
 app.get("/new", (_: Request, s: Response) => s.render("new"));
 app.post("/create", jsonBody, async (req: Request, res: Response) => {
     const { operations, name } = req.body;
-    if (req.session!.googletoken) 
-      client.setCredentials(req.session!.googletoken)
-    else return res.redirect("/new")
+    
+    if (req.session!.googletoken) {
+        if (req.session?.googletoken.expiry_date < new Date()) 
+            client.setCredentials(await refreshIt(client, req.session?.googletoken))
+        else client.setCredentials(req.session?.googletoken);
+    } else return res.redirect("/new")
 
     await new operationModel({
         author: req.session?.googletoken,
@@ -96,14 +96,15 @@ app.get("/auth", (req: Request, res: Response) => {
     client.getToken(String(code), async (err, token) => {
         if (err) console.error(`Something wrong with token: ${err}`);
         req.session!.googletoken = token;
-        client.setCredentials(req.session!.googletoken);
+        if (token) client.setCredentials(token);
+        else return res.redirect("/");
         const classroom = google.classroom({version: "v1", auth: client})
 
-        const userinfo = await classroom.userProfiles.get({userId: "me"})
+        const userinfo = (await classroom.userProfiles.get({ userId: "me" })).data;
 
-        req.session!.myid = userinfo.data.id;
-        req.session!.name = userinfo.data.name;
-
+        req.session!.myid = userinfo.id;
+        req.session!.name = userinfo.name;
+        
         req.session!.googlecode = String(code);
         res.redirect("/save-token");
     })
@@ -128,15 +129,17 @@ app.get("/opt/:id", async (_, s) => {
     oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
     
     if (oper.classroom != "") {
-        if (!(_.session!.googletoken)) return s.redirect("/?no-token-no-life");
-        client.setCredentials(_.session?.googletoken);
+        if (!(_.session!.googletoken)) return s.redirect("/?err=no-token-no-life");
+        if (_.session?.googletoken.expiry_date < new Date()) 
+            client.setCredentials(await refreshIt(client, _.session?.googletoken))
+        else client.setCredentials(_.session?.googletoken);
         const classroom = google.classroom({version: "v1", "auth": client});
-        classroom.courses.list({
-            courseStates: ["ACTIVE"]
-        }, (e, r) => {
-            if (e) console.error(e);
-            let courses = r?.data.courses?.filter(course => course.id == oper.classroom);
-            if (courses && courses!.length == 0)
+        classroom.courses.get({id: oper.classroom}, (e: Error | null, r?: any | null | undefined) => {
+            if (e) console.log(e);
+            
+            let courses = r?.data;
+            // @ts-ignore
+            if (courses && courses!.length == 0 || e?.code == 404)
                 return s.redirect("/?err=your-not-in-class")
             return s.render("user", {
                 operations: JSON.stringify(ope_edit),
@@ -157,9 +160,11 @@ app.get("/opt/:id", async (_, s) => {
 
 // middleware between course and home(
 app.get("/back", async (req: Request, res: Response) => {
-    client.setCredentials(req.session?.googletoken);
+    if (req.session?.googletoken.expiry_date < new Date()) 
+        client.setCredentials(await refreshIt(client, req.session?.googletoken))
+    else client.setCredentials(req.session?.googletoken);
 
-    let userinfo: string | GaxiosResponse<oauth2_v2.Schema$Userinfo>;
+    let userinfo;
 
     const classroom = google.classroom({version: "v1", auth: client});
     // @ts-ignore
@@ -169,30 +174,29 @@ app.get("/back", async (req: Request, res: Response) => {
         );
     if (operationModel.length < 0) return res.redirect("/");
 
-    google.oauth2({version: "v2", auth: client}).userinfo.get((e, s) => {
-        if (e) console.error(e);
-        else userinfo = s || "fuckit"
-        console.log(userinfo)
-        let courses;
-        classroom.courses.list({
-            teacherId: "me",
-            courseStates: ["ACTIVE"]
-        }, (e, res1) => {
-            if (e) console.error(`Error i courses ${e}`);
-            courses = res1?.data.courses;
-            if (courses && courses.length)
-                return res.render("select-course", { courses: courses, opt: operations.reverse() })
-            return res.redirect("/");
-        })
+    let courses;
+    classroom.courses.list({
+        teacherId: "me",
+        courseStates: ["ACTIVE"]
+    }, (e, res1) => {
+        if (e) console.error(`Error i courses ${e}`);
+        courses = res1?.data.courses;
+        if (courses && courses.length)
+            return res.render("select-course", { courses: courses, opt: operations.reverse() })
+        return res.redirect("/");
     })
 });
 
 // connecting classroom with operation and create coursework
 app.post("/course", jsonBody, async (req: Request, res: Response) => {
     console.log(req.body);
-    if (!req.session?.googletoken) return res.redirect("/back")
+    if (!req.session?.googletoken) return res.redirect("/back");
 
-    client.setCredentials(req.session?.googletoken);
+    console.log(req.session?.googletoken);
+    
+    if (req.session.googletoken.expiry_date < new Date()) 
+        client.setCredentials(await refreshIt(client, req.session?.googletoken))
+    else client.setCredentials(req.session?.googletoken);
 
     const classroom = google.classroom({version: "v1", auth: client});
     const opt = await operationModel.findById(req.body.optid);
@@ -221,42 +225,47 @@ app.post("/course", jsonBody, async (req: Request, res: Response) => {
 })
 
 // this was hard to do
+// nope is granting marks to student by teacher auth
 app.post("/nope", async (req: Request, res: Response) => {
+    // cannot find submission 404
+    // set userid back to test id /*'107300509570721804058'*/
+
     let correct = 0;
-
     let opt = req.body.opt;
-    await opt.map((o: {correct: string}) => if (o.correct == "true") correct++)
+    const original = await operationModel.findById(req.body.this);
+    let optDB = original?.operations;
+    for (let i = 0; i < opt.length; i++ ) {
+        // @ts-ignore 
+        if (opt[i].umd == optDB[i].md) correct++; if (opt[i].ud == optDB[i].d) correct++;
+    }
+    if (opt.length != original?.operations?.length || !optDB) return res.send("fuck it");
 
-    let id = req.body.this;
-
-    const original = await operationModel.findById(id);
-    const all = original?.operations?.length || 0;
+    let all = optDB!.length || 0;
 
     client.setCredentials(original!.author);
+    
     client.refreshAccessToken(async (err, token) => {
         if (err) console.error(err);
-
+        console.log(token);
+        
         const classroom = google.classroom({version: 'v1', auth: client});
-
-        // cannot find submission 404
-        // set userid back to test id /*'107300509570721804058'*/
         const assigment = (await classroom.courses.courseWork.studentSubmissions.list({
                 userId: String(req.session!.myid),
                 states: ['CREATED'],
                 courseId: String(original!.classroom),
                 courseWorkId: String(original!.courseId)
             })).data.studentSubmissions;
-        if (!assigment) return;
+        if (!assigment) return res.send("fuck it twice");
+        const mark = Math.floor((correct / (2*all)) * 100) || 0;
 
-        const mark = Math.floor((correct / all) * 100) || 0;
-        const propably = (await classroom.courses.courseWork.studentSubmissions.patch({
+        await classroom.courses.courseWork.studentSubmissions.patch({
             courseWorkId: String(original!.courseId), courseId: String(original!.classroom),
             id: String(assigment![0].id), updateMask: "assignedGrade,draftGrade",
             requestBody: {
                 assignedGrade: mark,
                 draftGrade: mark
             }
-        }))
+        })
     })
     res.send("success");
 })
