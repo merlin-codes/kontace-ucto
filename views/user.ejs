@@ -39,7 +39,7 @@
                     <td class="col-1"><p>{{ i+1 }}</p></td>
                     <td class="col-5"><p>{{ operation.name }}</p></td>
                     <td><p>{{ operation.cost }}</p></td>
-                    <td class="col-2">
+                    <td class="col-1">
                         <div v-if="(mode == 'sended' || mode == 'check')&& operation.correct">{{ operation.umd }}</div>
                         <div v-if="(mode == 'sended' || mode == 'check') && !operation.correct">
                             <s v-if="operation.umd" class="text-danger">{{ operation.umd }}</s>
@@ -52,7 +52,7 @@
                                     'text-white' : darkmode, 'bg-dark' : darkmode, 'text-dark': !darkmode,'bg-white' : !darkmode
                             }">
                     </td>
-                    <td class="col-2">
+                    <td class="col-1">
                         <div v-if="(mode == 'sended' || mode == 'check') && operation.correct">{{ operation.ud }}</div>
                         <div v-if="(mode == 'sended' || mode == 'check') && !operation.correct">
                             <s v-if="operation.ud" class="text-danger">{{ operation.ud }}</s>
