@@ -55,6 +55,7 @@ app.set("view engine", "ejs");
 
 // Create new
 app.get("/new", async (req: Request, res: Response) => {
+    if (!(req.session?.googletoken)) return res.redirect("/")
     if (req.session?.googletoken.expiry_date < new Date()) 
         client.setCredentials(await refreshIt(client, req.session?.googletoken))
     else client.setCredentials(req.session?.googletoken);
