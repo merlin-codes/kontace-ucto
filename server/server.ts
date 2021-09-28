@@ -66,7 +66,7 @@ app.get("/new", async (req: Request, res: Response) => {
         if (e) console.error(`Error i courses ${e}`);
         let courses = res1?.data.courses;
         if (courses && courses.length)
-            res.render("new")
+            return res.render("new")
         return res.redirect("/");
     })
 });
