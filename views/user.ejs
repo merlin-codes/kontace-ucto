@@ -105,7 +105,8 @@
                         opt: this.operations,
                         this: '<%= id %>'
                     }, (res) =>  {
-                        alert("Your answer has been saved");
+                        console.log(res);
+                        alert(`Your answer has been saved. You got ${res} points.`);
                     });
                     this.mode = "sandbox";
                 },

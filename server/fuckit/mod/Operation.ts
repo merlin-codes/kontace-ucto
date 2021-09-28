@@ -1,13 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-
-export interface Credentials extends mongoose.Types.Subdocument{
-    refresh_token?: string | null;
-    expiry_date?: number | null;
-    access_token?: string | null;
-    token_type?: string | null;
-    id_token?: string | null;
-    scope?: string;
-}
+import { Credentials } from "google-auth-library";
 
 export const OperationSchema = new Schema({
 	author_id: String,

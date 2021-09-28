@@ -5,7 +5,13 @@ What to do?
 - pockat nez vsichni studenti dokonci praci a pak teprve zapnout sandbox
 - \[option\] zmena pozadi na jakoukoliv barvu (vyber z palety)
 - filtrovat domovskou stranku pomoci zda jste soucasti kurzu
-- pridat refresh token i na  opt/:id
 - pridat search na domovskou stranku 
-- projit scopes 
 - analyze every step that people do when completing contation
+
+
+
+
+
+
+
+- tohle vypada jak nuzky: :<

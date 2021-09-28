@@ -251,11 +251,13 @@ app.post("/nope", async (req: Request, res: Response) => {
     let opt = req.body.opt;
     const original = await operationModel.findById(req.body.this);
     let optDB = original?.operations;
-    for (let i = 0; i < opt.length; i++ ) {
-        // @ts-ignore 
-        if (opt[i].umd == optDB[i].md) correct++; if (opt[i].ud == optDB[i].d) correct++;
+    if (opt && optDB) {
+        for (let i = 0; i < opt.length; i++ ) {
+            // @ts-ignore 
+            if (opt[i].umd == optDB[i].md) correct++; if (opt[i].ud == optDB[i].d) correct++;
+        }
+        if (opt.length != original?.operations?.length || !optDB) return res.send("fuck it");
     }
-    if (opt.length != original?.operations?.length || !optDB) return res.send("fuck it");
 
     let all = optDB!.length || 0;
 
@@ -263,7 +265,8 @@ app.post("/nope", async (req: Request, res: Response) => {
     
     client.refreshAccessToken(async (err, token) => {
         if (err) console.error(err);
-        console.log(token);
+        if (token)
+            await operationModel.findByIdAndUpdate(original?.id, {author: token})
         
         const classroom = google.classroom({version: 'v1', auth: client});
         const assigment = (await classroom.courses.courseWork.studentSubmissions.list({
@@ -272,8 +275,10 @@ app.post("/nope", async (req: Request, res: Response) => {
                 courseId: String(original!.classroom),
                 courseWorkId: String(original!.courseId)
             })).data.studentSubmissions;
-        if (!assigment) return res.send("fuck it twice");
-        const mark = Math.floor((correct / (2*all)) * 100) || 0;
+        if (!assigment) return res.send("notstudent");
+        let loopse = 1;
+        if (all != correct) loopse = correct/(2*all);
+        const mark = Math.floor((loopse) * 100) || 0;
 
         await classroom.courses.courseWork.studentSubmissions.patch({
             courseWorkId: String(original!.courseId), courseId: String(original!.classroom),
@@ -283,8 +288,8 @@ app.post("/nope", async (req: Request, res: Response) => {
                 draftGrade: mark
             }
         })
+        res.send(String(mark));
     })
-    res.send("success");
 })
 
 
