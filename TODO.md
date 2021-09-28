@@ -8,3 +8,4 @@ What to do?
 - pridat refresh token i na  opt/:id
 - pridat search na domovskou stranku 
 - projit scopes 
+- analyze every step that people do when completing contation

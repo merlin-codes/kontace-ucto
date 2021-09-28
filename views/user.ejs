@@ -150,14 +150,6 @@
                     t.operations = JSON.parse(localStorage.getItem("O-<%= id %>"));
 
                 const r = t.operations[0].cost;
-                if (!isNaN(r) && !isNaN(parseFloat(r)))
-                  t.operations.map(o => {
-                    o.cost = new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                      maximumFractionDigits: 0
-                    }).format(o.cost).replace(/,/g, " ");
-                  });
                 setInterval(t.areyoucheating, 1000)
             }
         })
