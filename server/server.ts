@@ -54,7 +54,23 @@ app.set("view engine", "ejs");
 
 
 // Create new
-app.get("/new", (_: Request, s: Response) => s.render("new"));
+app.get("/new", async (req: Request, res: Response) => {
+    if (req.session?.googletoken.expiry_date < new Date()) 
+        client.setCredentials(await refreshIt(client, req.session?.googletoken))
+    else client.setCredentials(req.session?.googletoken);
+    
+    google.classroom({version: "v1", auth: client}).courses.list({
+        teacherId: "me",
+        courseStates: ["ACTIVE"]
+    }, (e, res1) => {
+        if (e) console.error(`Error i courses ${e}`);
+        let courses = res1?.data.courses;
+        if (courses && courses.length)
+            res.render("new")
+        return res.redirect("/");
+    })
+});
+
 app.post("/create", jsonBody, async (req: Request, res: Response) => {
     const { operations, name } = req.body;
     
@@ -62,7 +78,7 @@ app.post("/create", jsonBody, async (req: Request, res: Response) => {
         if (req.session?.googletoken.expiry_date < new Date()) 
             client.setCredentials(await refreshIt(client, req.session?.googletoken))
         else client.setCredentials(req.session?.googletoken);
-    } else return res.redirect("/new")
+    } else return res.sendStatus(403);
 
     await new operationModel({
         author: req.session?.googletoken,
