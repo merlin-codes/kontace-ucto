@@ -351,6 +351,7 @@ app.get("/epic/make", (req, res) => {
     }).catch((err) => {
         console.error(err);
     });
+    res.send("completed");
 });
 // Manipulation with Gcode from login
 app.post("/get-code", jsonBody, (req, res) => {
