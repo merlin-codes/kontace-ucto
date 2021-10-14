@@ -61,7 +61,7 @@ app.get("/new", async (req: Request, res: Response) => {
             client.setCredentials(await refreshIt(client, req.session?.googletoken));
         else client.setCredentials(req.session?.googletoken);
     } catch (error) {
-        res.redirect("/")
+        return res.redirect("/")
     }
     
     google.classroom({version: "v1", auth: client}).courses.list({
