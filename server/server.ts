@@ -350,9 +350,11 @@ app.get("/epic/make", (req, res) => {
     console.log(pathone)
     docxTables({
         file: pathone
-    }).then((data: object) => {
+    // @ts-ignore
+    }).then((data)=> {
         // .docx table data
-        console.log(data)
+        // @ts-ignore
+        console.log(JSON.stringify(data));
     }).catch((err: Error) => {
         console.error(err)
     })
