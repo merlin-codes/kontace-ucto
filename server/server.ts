@@ -5,6 +5,7 @@ import { google, oauth2_v2 } from 'googleapis';
 import { Operation, IOperation } from './fuckit/mod/Operation';
 import { refreshIt } from './fuckit/useless';
 import fileUpload from 'express-fileupload';
+// @ts-ignore
 import docxTables from 'docx-tables';
 import path from "path";
 
@@ -336,7 +337,8 @@ app.post("/epic/do", async (req, res) => {
             let file = req.files.die;
             // @ts-ignore
             file.mv('./epic/'+file?.name);
-            req.session!.filename = file?.name;
+            // @ts-ignore
+            req.session!.filename = file!.name;
             return res.redirect("/epic/make");
         }
     } catch (error) {
@@ -348,11 +350,11 @@ app.get("/epic/make", (req, res) => {
     console.log(pathone)
     docxTables({
         file: pathone
-    }).then((data) => {
+    }).then((data: object) => {
         // .docx table data
         console.log(data)
-    }).catch((error) => {
-        console.error(error)
+    }).catch((err: Error) => {
+        console.error(err)
     })
 })
 
