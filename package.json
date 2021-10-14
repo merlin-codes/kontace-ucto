@@ -25,15 +25,18 @@
     "body-parser": "^1.19.0",
     "cookie-session": "^1.4.0",
     "cors": "^2.8.5",
+    "docx-tables": "^0.2.0",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
+    "express-fileupload": "^1.2.1",
     "fs": "0.0.1-security",
     "googleapis": "^85.0.0",
     "meme-api": "^1.0.0",
     "mongodb": "^4.1.1",
     "mongoose": "^6.0.1",
     "node-ts": "^5.1.2",
+    "path": "^0.12.7",
     "query-parse": "^2.0.0",
     "query-string": "^7.0.1",
     "random-memes": "^3.1.0",
@@ -43,6 +46,7 @@
     "url-parse": "^1.5.3"
   },
   "devDependencies": {
+    "@types/express-fileupload": "^1.1.7",
     "@types/request": "^2.48.7",
     "nodemon": "^2.0.12"
   },

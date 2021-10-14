@@ -1,9 +1,12 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import cors from "cors";
+import cors from 'cors';
 import { google, oauth2_v2 } from 'googleapis';
 import { Operation, IOperation } from './fuckit/mod/Operation';
 import { refreshIt } from './fuckit/useless';
+import fileUpload from 'express-fileupload';
+import docxTables from 'docx-tables';
+import path from "path";
 
 require('dotenv').config();
 
@@ -35,7 +38,11 @@ const client = new google.auth.OAuth2({
 })
 const operationModel = Operation;
 
+
 // use
+app.use(fileUpload({
+    createParentPath: true
+}));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
@@ -188,7 +195,7 @@ app.get("/back", async (req: Request, res: Response) => {
     const classroom = google.classroom({version: "v1", auth: client});
     // @ts-ignore
     const operations = await operationModel
-        .find( // {$or: [{'classroom': !null}, {'classroom': ""}]}
+        .find(
             {$and: [{$or: [{'classroom': null}, {'classroom': ""}]}, {'author_id': req.session?.myid}]}
         );
     if (operationModel.length < 0) return res.redirect("/");
@@ -317,6 +324,37 @@ app.get("/get/:id", async (r, s) => s.send(await (operationModel.findById(r.para
 app.get("/remove/classroom/:id", async (req, res) => res.send(
     await (operationModel.updateOne({"_id": req.params.id}, {classroom: ""}))
 ));
+
+// Epic time
+app.get("/epic", (r, s) => s.render("epic"))
+app.post("/epic/do", async (req, res) => {
+    try {
+        console.log(req.files)
+        if (!req.files)
+            res.send({status:false, message: 'File not found.'});
+        else {
+            let file = req.files.die;
+            // @ts-ignore
+            file.mv('./epic/'+file?.name);
+            req.session!.filename = file?.name;
+            return res.redirect("/epic/make");
+        }
+    } catch (error) {
+        res.send(500).send(error)
+    }
+})
+app.get("/epic/make", (req, res) => {
+    let pathone = path.join(__dirname, "..", "epic", req.session?.filename); // '/epic/'+req.session?.filename
+    console.log(pathone)
+    docxTables({
+        file: pathone
+    }).then((data) => {
+        // .docx table data
+        console.log(data)
+    }).catch((error) => {
+        console.error(error)
+    })
+})
 
 // Manipulation with Gcode from login
 app.post("/get-code", jsonBody, (req, res) => {

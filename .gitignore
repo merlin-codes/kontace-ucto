@@ -2,3 +2,4 @@ client-new/build
 node_modules
 .gitignore
 package-lock.json
+epic/*
