@@ -9,6 +9,6 @@ export function refreshIt(client: OAuth2Client, token: Credentials): Promise<Cre
                 
                 r(token!);
             })
-        }
+        } else throw new Error("Token can't be refreshed");
     })
 }

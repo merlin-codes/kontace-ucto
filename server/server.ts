@@ -55,10 +55,14 @@ app.set("view engine", "ejs");
 
 // Create new
 app.get("/new", async (req: Request, res: Response) => {
-    if (!(req.session?.googletoken)) return res.redirect("/")
-    if (req.session?.googletoken.expiry_date < new Date()) 
-        client.setCredentials(await refreshIt(client, req.session?.googletoken))
-    else client.setCredentials(req.session?.googletoken);
+    if (!(req.session?.googletoken)) return res.redirect("/");
+    try {
+        if (req.session?.googletoken.expiry_date < new Date())
+            client.setCredentials(await refreshIt(client, req.session?.googletoken));
+        else client.setCredentials(req.session?.googletoken);
+    } catch (error) {
+        res.redirect("/")
+    }
     
     google.classroom({version: "v1", auth: client}).courses.list({
         teacherId: "me",
