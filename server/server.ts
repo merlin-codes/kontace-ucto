@@ -185,8 +185,6 @@ app.get("/back", async (req: Request, res: Response) => {
         client.setCredentials(await refreshIt(client, req.session?.googletoken))
     else client.setCredentials(req.session?.googletoken);
 
-    let userinfo;
-
     const classroom = google.classroom({version: "v1", auth: client});
     // @ts-ignore
     const operations = await operationModel
@@ -202,6 +200,8 @@ app.get("/back", async (req: Request, res: Response) => {
     }, (e, res1) => {
         if (e) console.error(`Error i courses ${e}`);
         courses = res1?.data.courses;
+        console.log(courses);
+        
         if (courses && courses.length)
             return res.render("select-course", { courses: courses, opt: operations.reverse() })
         return res.redirect("/");
