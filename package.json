@@ -9,7 +9,7 @@
     "slow": "TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true ts-node ./server/server.ts",
     "slowbuild": "TS_NODE_FILES=true TS_NODE_TRANSPILE_ONLY=true tsc -p ./",
     "build": "tsc -p ./",
-    "start": "node ./server/server.js"
+    "start": "tsc -p ./ && node ./server/server.js"
   },
   "keywords": [],
   "author": "",
