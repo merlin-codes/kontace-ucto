@@ -360,13 +360,13 @@ app.get("/epic/make", async (req, res) => {
     let pathone = path.join(__dirname, "..", "epic", req.session?.filename); // '/epic/'+req.session?.filename
 
     mammoth.extractRawText({path: pathone})
-    .then(function(result){
+    .then(function(result: { value: any; }){
         let text = result.value; // The raw text
 
         //this prints all the data of docx file
         //console.log(text);
         console.log('------------------------------');
-        let textLines = text.split ("\n").filter(x => x != "").splice(1).map(x => {
+        let textLines = text.split ("\n").filter((x: string) => x != "").splice(1).map((x: string) => {
             return x.replace(/^(.\d||\d)$/g, '\n$&' )
             .replace(/^.(.*)$/g, '$&\\')
             .replace(/\\\n/g, ',')

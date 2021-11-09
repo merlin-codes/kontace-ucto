@@ -24,7 +24,7 @@ export function getCzechVersion(data: string) {
         .replace(/Ã¡/, 'á')
         .replace(/Ãº/, 'ú')
         .replace(/Å¯/, 'ů')
-        .replace(/Ã\u009a/2/, 'Ú')
+        .replace(/Ã\u009a/, 'Ú')
         .replace(/Å\u0099/, 'ř')
 }
 

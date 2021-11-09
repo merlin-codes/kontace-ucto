@@ -19,8 +19,7 @@ const googleapis_1 = require("googleapis");
 const Operation_1 = require("./fuckit/mod/Operation");
 const useless_1 = require("./fuckit/useless");
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
-// @ts-ignore
-const docx_tables_1 = __importDefault(require("docx-tables"));
+const uuid_1 = require("uuid");
 const path_1 = __importDefault(require("path"));
 require('dotenv').config();
 /*
@@ -30,11 +29,15 @@ require('dotenv').config();
 
 */
 // making consts
+var mammoth = require("mammoth");
 const app = (0, express_1.default)();
 const bodyParser = require("body-parser");
 const jsonBody = bodyParser.json();
 const PORT = +(process.env.PORT || 3103);
 let SERVER = `https://kontace-ucto.herokuapp.com`;
+function getNormal(content) {
+    return content.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 if (process.env.ServerType == "local")
     SERVER = `http://localhost:${PORT}`;
 const SCOPES = [
@@ -320,14 +323,17 @@ app.get("/remove/classroom/:id", (req, res) => __awaiter(void 0, void 0, void 0,
     return res.send(yield (operationModel.updateOne({ "_id": req.params.id }, { classroom: "" })));
 }));
 // Epic time
-app.get("/epic", (r, s) => s.render("epic"));
+app.get("/epic", (req, res) => res.render("epic"));
 app.post("/epic/do", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.files);
+        console.log(req.files.die);
         if (!req.files)
             res.send({ status: false, message: 'File not found.' });
         else {
             let file = req.files.die;
+            // @ts-ignore
+            if (!(file === null || file === void 0 ? void 0 : file.name.includes("doc")))
+                return res.send(415).send();
             // @ts-ignore
             file.mv('./epic/' + (file === null || file === void 0 ? void 0 : file.name));
             // @ts-ignore
@@ -339,20 +345,72 @@ app.post("/epic/do", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.send(500).send(error);
     }
 }));
-app.get("/epic/make", (req, res) => {
-    var _a;
-    let pathone = path_1.default.join(__dirname, "..", "epic", (_a = req.session) === null || _a === void 0 ? void 0 : _a.filename); // '/epic/'+req.session?.filename
-    console.log(pathone);
-    (0, docx_tables_1.default)({
-        file: pathone
-    }).then((data) => {
-        // .docx table data
-        console.log(data);
-    }).catch((err) => {
-        console.error(err);
-    });
-    res.send("completed");
-});
+// generate this to the localstorage
+// redirect to '/new'
+app.get("/epic/make", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _z;
+    let pathone = path_1.default.join(__dirname, "..", "epic", (_z = req.session) === null || _z === void 0 ? void 0 : _z.filename); // '/epic/'+req.session?.filename
+    mammoth.extractRawText({ path: pathone })
+        .then(function (result) {
+        let text = result.value; // The raw text
+        //this prints all the data of docx file
+        //console.log(text);
+        console.log('------------------------------');
+        let textLines = text.split("\n").filter((x) => x != "").splice(1).map((x) => {
+            return x.replace(/^(.\d||\d)$/g, '\n$&')
+                .replace(/^.(.*)$/g, '$&\\')
+                .replace(/\\\n/g, ',')
+                .replace(/,$/g, '')
+                .replace(/\\/g, "")
+                .replace(',--', '');
+        }).join().replace(/,\n/g, "\n").split("\n"); // .replace(/\n/g, '<br/>')
+        console.log(textLines);
+        let optTH = textLines[0].split(",");
+        let isDoklad = false;
+        let fckmd = 0;
+        let fckd = 0;
+        let fckname = 0;
+        let fckdoklad = 0;
+        let fckcost = 0;
+        console.log(optTH);
+        for (let i = 1; i < optTH.length; i++) {
+            console.log(optTH[i]);
+            if (optTH[i].toLowerCase().includes("md"))
+                fckmd = i;
+            else if (optTH[i].toLowerCase() == "d")
+                fckd = i;
+            else if (getNormal(optTH[i]).toLowerCase() == "castka")
+                fckcost = i;
+            else if (getNormal(optTH[i]).split(" ").length >= 2)
+                fckname = i;
+            else if (optTH[i].includes("dokla")) {
+                fckdoklad = i;
+                isDoklad = true;
+            }
+        }
+        // @ts-ignore
+        textLines = textLines.splice(1).filter(x => typeof x[0] != 'undefined').map(line => {
+            let object = { md: "", d: "", name: "", cost: "", id: `${(0, uuid_1.v4)()}` };
+            let fck = line.split(",");
+            object.md = fck[fckmd];
+            object.d = fck[fckd];
+            object.cost = fck[fckcost].replace(" ", "");
+            if (isDoklad)
+                object.name = fck[fckdoklad] + " - " + fck[fckname];
+            else
+                object.name = fck[fckname];
+            return object;
+        });
+        console.log(textLines);
+        if (!textLines)
+            return res.send("Not working");
+        return res.render('newdoc', {
+            operations: textLines
+        });
+    })
+        .done();
+    console.log("this is just ended:w");
+}));
 // Manipulation with Gcode from login
 app.post("/get-code", jsonBody, (req, res) => {
     req.session.googlecode = req.body.code;
