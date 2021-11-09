@@ -164,7 +164,7 @@ app.get("/opt/:id", async (_, s) => {
     if (oper == null) return s.redirect("/");
     
     let ope_edit: any = []
-    oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false }))
+    oper.operations.map((o: any) => ope_edit.push({ ...o, umd: "", ud: "", correct: false, cost: o.cost.substring(1) }))
     
     if (oper.classroom != "") {
         if (!(_.session!.googletoken)) return s.redirect("/?err=no-token-no-life");
