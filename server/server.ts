@@ -69,9 +69,11 @@ app.set("view engine", "ejs");
 app.get("/new", async (req: Request, res: Response) => {
     if (!(req.session?.googletoken)) return res.redirect("/");
     try {
-        if (req.session?.googletoken.expiry_date < new Date())
-            client.setCredentials(await refreshIt(client, req.session?.googletoken));
-        else client.setCredentials(req.session?.googletoken);
+        if (req.session?.googletoken.expiry_date < new Date()) {
+            let newtoken = await refreshIt(client, req.session?.googletoken);
+            client.setCredentials(newtoken)
+            req.session!.googletoken = newtoken;
+        } else client.setCredentials(req.session?.googletoken);
     } catch (error) {
         return res.redirect("/")
     }
@@ -92,9 +94,11 @@ app.post("/create", jsonBody, async (req: Request, res: Response) => {
     const { operations, name } = req.body;
     
     if (req.session!.googletoken) {
-        if (req.session?.googletoken.expiry_date < new Date()) 
-            client.setCredentials(await refreshIt(client, req.session?.googletoken))
-        else client.setCredentials(req.session?.googletoken);
+        if (req.session?.googletoken.expiry_date < new Date()) {
+            let newtoken = await refreshIt(client, req.session?.googletoken);
+            client.setCredentials(newtoken)
+            req.session!.googletoken = newtoken;
+        }  else client.setCredentials(req.session?.googletoken);
     } else return res.sendStatus(403);
 
     await new operationModel({
@@ -164,8 +168,15 @@ app.get("/opt/:id", async (_, s) => {
     
     if (oper.classroom != "") {
         if (!(_.session!.googletoken)) return s.redirect("/?err=no-token-no-life");
-        if (_.session?.googletoken.expiry_date < new Date()) 
-            client.setCredentials(await refreshIt(client, _.session?.googletoken))
+        if (_.session?.googletoken.expiry_date < new Date()) {
+            try {
+                let newtoken = await refreshIt(client, _.session?.googletoken);
+                client.setCredentials(newtoken);
+                _.session!.googletoken  = newtoken;
+            } catch(Error) {
+                s.redirect("/?err=token-cannot-be-refresh-it");
+            }
+        }
         else client.setCredentials(_.session?.googletoken);
         const classroom = google.classroom({version: "v1", "auth": client});
         classroom.courses.get({id: oper.classroom}, (e: Error | null, r?: any | null | undefined) => {
@@ -194,8 +205,11 @@ app.get("/opt/:id", async (_, s) => {
 
 // middleware between course and home(
 app.get("/back", async (req: Request, res: Response) => {
-    if (req.session?.googletoken.expiry_date < new Date()) 
-        client.setCredentials(await refreshIt(client, req.session?.googletoken))
+    if (req.session?.googletoken.expiry_date < new Date()) {
+        let newtoken = await refreshIt(client, req.session?.googletoken);
+        client.setCredentials(newtoken)
+        req.session!.googletoken = newtoken;
+    }
     else client.setCredentials(req.session?.googletoken);
 
     const classroom = google.classroom({version: "v1", auth: client});
@@ -228,9 +242,11 @@ app.post("/course", jsonBody, async (req: Request, res: Response) => {
 
     console.log(req.session?.googletoken);
     
-    if (req.session.googletoken.expiry_date < new Date()) 
-        client.setCredentials(await refreshIt(client, req.session?.googletoken))
-    else client.setCredentials(req.session?.googletoken);
+    if (req.session.googletoken.expiry_date < new Date()) {
+        let newtoken = await refreshIt(client, req.session?.googletoken);
+        client.setCredentials(newtoken)
+        req.session!.googletoken = newtoken;
+    } else client.setCredentials(req.session?.googletoken);
 
     const classroom = google.classroom({version: "v1", auth: client});
     const opt = await operationModel.findById(req.body.optid);
