@@ -157,7 +157,7 @@
                       style: 'currency',
                       currency: 'USD',
                       maximumFractionDigits: 0
-                    }).format(o.cost).replace(/,/g, " ");
+                    }).format(o.cost).replace(/,/g, " ").substring(1);
                 });
                 setInterval(t.areyoucheating, 1000)
             }
