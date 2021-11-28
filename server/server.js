@@ -32,7 +32,6 @@ require('dotenv').config();
 var mammoth = require("mammoth");
 const app = (0, express_1.default)();
 const bodyParser = require("body-parser");
-const jsonBody = bodyParser.json();
 const PORT = +(process.env.PORT || 3103);
 let SERVER = `https://kontace-ucto.herokuapp.com`;
 function getNormal(content) {

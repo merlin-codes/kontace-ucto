@@ -48,7 +48,7 @@
                         </h3>
                     </a>
                     <% if (typeof operation.author_id != 'undefined' && operation.author_id == code) { %>
-                        <a class="btn btn-danger my-3 ms-2 px-3 fs-3" href="/del/<%= operation.id %>">&#128501;</a>
+                        <a class="btn btn-danger my-3 ms-2 px-3 fs-3" href="/opt/del/<%= operation.id %>">&#128501;</a>
                     <% } %>
                 </div>
             <% }) %>
@@ -57,7 +57,7 @@
             <% if(operations.filter(o => typeof o.author_id != 'undefined' && o.author_id == code && (o.classroom == null || o.classroom == "")).length > 0) { %>
                 <a href="/back" class="btn btn-warning col p-3 me-4 my-2">Pridelit ke kurzu</a>
             <% } %>
-            <a href="/new"  class="text-white btn btn-success col p-3 my-2">Vytvorit novou</a>
+            <a href="/opt/new"  class="text-white btn btn-success col p-3 my-2">Vytvorit novou</a>
         </div>    
     </main>
     <div class="d-flex fixed-bottom text-end px-2 py-4">

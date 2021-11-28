@@ -34,9 +34,12 @@
                 <tr><th>Číslo</th><th>Jméno</th><th>Častka</th><th>MD</th><th>D</th>
               </tr>
             </thead>
-            <tbody>
-                <tr v-for="(operation, i) in operations">
+            <tbody v-for="(operation, i) in operations">
+                <tr>
                     <td class="col-1"><p>{{ i+1 }}</p></td>
+                    <!--
+                        <td class="col-1"><p>{{ operation.dph || operation.dph != 0 ? operation.dph: "Neni" }}</p></td>
+                    -->
                     <td class="col-5"><p>{{ operation.name }}</p></td>
                     <td><p>{{ operation.cost }}</p></td>
                     <td class="col-1">
@@ -63,6 +66,35 @@
                             v-bind:class="{
                                     'text-white' : darkmode, 'bg-dark' : darkmode, 'text-dark': !darkmode,'bg-white' : !darkmode
                             }">
+                    </td>
+                    <td class="col-1 text-danger fs-4" ><span v-if="!operation.correct">!</span></td>
+                </tr>
+                <tr v-if="operation.dph && operation.dph != 0">
+                    <td class="col-1"></td>
+                    <!--
+                        <td class="col-1"><p>{{ operation.dph || operation.dph != 0 ? operation.dph: "Neni" }}</p></td>
+                    -->
+                    <td class="col-5"><p>DPH k operaci {{ i+1 }}. [ {{ operation.dph }}% ]</p></td>
+                    <td>
+                        <div v-if="(mode == 'sended' || mode == 'check')&& operation.correct">{{ operation.uconst }}</div>
+                        <div v-if="(mode == 'sended' || mode == 'check') && !operation.correct">
+                            <s v-if="operation.umd" class="text-danger">{{ operation.uconst }}</s>
+                            <span v-bind:class="{ 'text-danger': !operation.umd }">{{ operation.cost * (Number(operation.dph)/100) }}</span>
+                        </div>
+
+                        <input type="text" class="form-control text-center" v-model="operation.uconst"
+                            v-if="(mode != 'sended' || mode == 'check') && mode != 'check'"
+                            v-bind:class="{
+                                    'text-white' : darkmode, 'bg-dark' : darkmode, 'text-dark': !darkmode,'bg-white' : !darkmode
+                            }">
+                    </td>
+                    <td class="col-1">
+                        <button class="btn btn-info" v-bind:value="operation.id" v-if="!operation.dphtype" v-on:click="changedph($event)">zde</button>
+                        <button class="btn btn-dark" disabled v-else v-on:click="changedph">zde</button>
+                    </td>
+                    <td class="col-1">
+                        <button class="btn btn-info" v-bind:value="operation.id" v-if="operation.dphtype" v-on:click="changedph($event)">zde</button>
+                        <button class="btn btn-dark" disabled v-else v-on:click="changedph">zde</button>
                     </td>
                     <td class="col-1 text-danger fs-4" ><span v-if="!operation.correct">!</span></td>
                 </tr>
@@ -126,6 +158,14 @@
                 areyoucheating() {
                     if (this.mode != localStorage.getItem("mod-<%= id %>") && this.mode != "load")
                         localStorage.setItem("mod-<%= id %>", this.mode);
+                },
+                changedph(event) {
+                    let id = event.target.value;
+                    this.operations = this.operations.map(opt => {
+                        if (opt.id == id)
+                            opt.dphtype = !opt.dphtype
+                        return opt;
+                    })
                 }
             },
             watch: {

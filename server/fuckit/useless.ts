@@ -1,13 +1,17 @@
 import { Credentials, OAuth2Client } from "google-auth-library";
+import {IOperation} from "./mod/Operation";
 
 export function refreshIt(client: OAuth2Client, token: Credentials): Promise<Credentials> {
+    console.log("something");
+    console.log(token);
     return new Promise((r, rej) => {
         if (token.refresh_token) {
             client.refreshAccessToken((e, token) => {
                 if (e) console.log(e);
                 console.log(`token is: ${token}`);
                 
-                r(token!);
+                // @ts-ignore
+                r(token);
             })
         } else throw new Error("Token can't be refreshed");
     })
@@ -33,7 +37,19 @@ export function getNormal(content: string) {
 }
 
 
+export function correctIt(opt: IOperation[], optDB: IOperation[]): Number {
+    if (opt.length != optDB?.length || !optDB) return 0;
 
+    let correct = 0
+
+    if (opt && optDB)
+        for (let i = 0; i < opt.length; i++ ) {
+           // @ts-ignore 
+            if (opt[i].umd == optDB[i].md) correct++;
+            if (opt[i].ud == optDB[i].d) correct++;
+        }
+    return correct;
+}
 
 
 
