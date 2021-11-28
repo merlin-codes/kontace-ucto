@@ -67,7 +67,7 @@ router.post("/nope", async (req: Request, res: Response) => {
 
     let all = optDB!.length || 0;
 
-    let correct: Number= correctIt(opt, optDB || [])
+    let correct: number= correctIt(opt, optDB || [])
 
     client.setCredentials(original!.author);
     

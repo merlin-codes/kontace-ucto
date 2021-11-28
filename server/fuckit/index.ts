@@ -53,7 +53,7 @@ router.get("/auth", (req: Request, res: Response) => {
         
         const author = (await Author.find({author_id: userinfo.id || ""}))[0];
 
-        if (author.length == 0) {
+        if (author && typeof author.author_id == undefined) {
             new Author({
                 refresh_token: token.refresh_token,
                 author_id: userinfo.id
@@ -64,7 +64,8 @@ router.get("/auth", (req: Request, res: Response) => {
             author.save();
             req.session!.googletoken = token;
         } else {
-            token.refresh_token = author.refresh_token;
+
+            token.refresh_token = author.refresh_token.toString();
             req.session!.googletoken = token;
         }
         req.session!.googlecode = String(code);

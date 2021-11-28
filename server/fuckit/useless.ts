@@ -37,15 +37,16 @@ export function getNormal(content: string) {
 }
 
 
-export function correctIt(opt: IOperation[], optDB: IOperation[]): Number {
+export function correctIt(opt: any, optDB: IOperation[]): Number {
     if (opt.length != optDB?.length || !optDB) return 0;
 
-    let correct = 0
+    let correct: number = 0
 
     if (opt && optDB)
         for (let i = 0; i < opt.length; i++ ) {
-           // @ts-ignore 
+            // @ts-ignore 
             if (opt[i].umd == optDB[i].md) correct++;
+            // @ts-ignore 
             if (opt[i].ud == optDB[i].d) correct++;
         }
     return correct;
