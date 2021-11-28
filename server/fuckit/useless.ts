@@ -37,7 +37,7 @@ export function getNormal(content: string) {
 }
 
 
-export function correctIt(opt: any, optDB: IOperation[]): Number {
+export function correctIt(opt: any, optDB: IOperation[]): number {
     if (opt.length != optDB?.length || !optDB) return 0;
 
     let correct: number = 0

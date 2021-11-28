@@ -174,9 +174,9 @@ router.post("/create", jsonBody, async (req: Request, res: Response) => {
     return res.sendStatus(200);
 });
 
-router.get("/refreshit", async (req, res) => {
+router.get("/refreshit", async (req: Request, res: Response) => {
     let newtoken = await refreshIt(client, req.session?.googletoken);
-    res.send([newtoken, req.session.googletoken])
+    res.send([newtoken, req.session?.googletoken])
 })
 
 module.exports = router
