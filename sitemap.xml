@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://kontace-ucto.herokuapp.com/</loc>
+    <changefreq>always</changefreq>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>http://kontace-ucto.herokuapp.com/new</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>http://kontace-ucto.herokuapp.com/meme</loc>
+    <changefreq>always</changefreq>
+    <priority>0.50</priority>
+  </url>
+  <url>
+    <loc>http://kontace-ucto.herokuapp.com/privacy</loc>
+    <changefreq>never</changefreq>
+    <priority>0.60</priority>
+  </url>
+  <url>
+    <loc>http://kontace-ucto.herokuapp.com/terms</loc>
+    <changefreq>never</changefreq>
+    <priority>0.60</priority>
+  </url>
+</urlset>

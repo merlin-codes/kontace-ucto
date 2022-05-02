@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="/icon.ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <title>Vybrat kurz</title>
+    <style>
+        form {
+            width: 20vw;
+            margin: 20vh auto;
+        }
+    </style>
+</head>
+<body class="bg-dark text-white text-center p-5">
+    <form action="/course" method="post" class="p-5 bg-secondary">
+        <h3 class="mb-3">Pridat ukol do: </h3>
+        <select name="courseid" id="courseID" class="form-select bg-dark text-white mb-3">
+            <% courses.map( (course, id) => { %>
+                <option value="<%= course.id %>" <%= id == 0 ? 'selected': '' %>><%= course.name %></option>
+            <% }) %>
+        </select>
+        <h5>Ukol: </h5>
+        <select name="optid" id="optID" class="form-select bg-dark text-white mb-3">
+            <% opt.map( (o, id) => { %>
+                <option value="<%= o.id %>" <%= id == 0 ? 'selected': '' %>><%= o.name %></option>
+            <% }) %>
+        </select>
+        <button class="btn btn-primary" type="submit">Pridat</button>
+    </form>
+</body>
+</html>

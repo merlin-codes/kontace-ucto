@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="/icon.ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+    <title>Presmerovani...</title>
+    <style>
+        form {
+            width: 20vw;
+            margin: 20vh auto;
+        }
+    </style>
+</head>
+<body class="bg-dark text-white text-center p-5">
+    <script>
+        this.localStorage.setItem("operations", '<%- JSON.stringify(operations) %>')
+        document.location.href="/opt/new";
+    </script>
+    <h1>Budete presmerovani na tvorbu nove predkontace...</h1>
+</body>
+</html>

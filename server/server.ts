@@ -1,126 +1,64 @@
 import express, { Request, Response } from 'express';
-import mongoose, { ObjectId, Schema } from 'mongoose';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import { google } from 'googleapis';
+import fileUpload from 'express-fileupload';
+import bodyParser from 'body-parser';
+import { client, PORT, SERVER } from "./fuckit/client";
+import { Operation } from "./fuckit/mod/Operation";
+
+
 require('dotenv').config();
+
+
+/*
+
+    Made by Miloslav Stekrt
+    Let's create something new :D
+
+*/
 
 
 // making consts
 const app: express.Application = express();
-const PORT: number = 3103;
-const bodyParser = require("body-parser");
-const jsonBody = bodyParser.json();
 
-// Schema
-const TokenSchema = new Schema({
-    author: String,
-    token: String
-});
-interface IToken extends Document{
-    author: String,
-    token: String
-}
-const tModel = mongoose.model<IToken>("token", TokenSchema);
+// use
+app.use(fileUpload({
+    createParentPath: true
+}));
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
-const OperationSchema = new Schema({
-    author: {type: mongoose.Schema.Types.ObjectId, ref: '_id'},
-    name: String,
-    operations: []
-});
-interface IOperation extends Document {
-    author: {type: mongoose.Schema.Types.ObjectId, ref: '_id'},
-    user: String,
-    name: String,
-    operations: []
-}
-const qModel = mongoose.model<IOperation>("question", OperationSchema);
-
+// Creating session
+app.use(require("cookie-session")({
+    name: "tridentonezero",
+    keys: ['fuckinggodisdeaddearnewgod', 'helpmenowyouknowyouareidiot']
+}))
 
 // set
 app.set("view engine", "ejs");
 
-// use
-app.use(express.static("public"));
+
+// new routes
+app.use("/opt", require("./fuckit/opt"));
+app.use("/epic", require("./fuckit/epic"));
+app.use("/google", require("./fuckit/gblbosti"));
+app.use("/", require("./fuckit/api"));
+app.use("/", require("./fuckit/index"));
+app.use("/", require("./fuckit/gblbosti"));
 
 
-// routes
-app.get("/new", (_: Request, s: Response) => {
-    s.render("new");
-});
 
-app.post("/create",jsonBody, async (r: Request, s: Response) => {
-    // redirect using client
-    const {operations, token, name} = r.body;
-    const author: any = await tModel.findOne({token: token});
-    try {
-        if (author != null || mongoose.isValidObjectId(author._id)) {
-            const question = new qModel({
-                author: author._id,
-                name: name,
-                operations: operations
-            });
-            await question.save();
-            return s.sendStatus(200);
-        } else {
-            return s.sendStatus(403);
-        }
-    } catch (error) {
-        s.sendStatus(403)
-    }
-});
+app.get("/get/:id", async (r, s) => s.send(await (Operation.findById(r.params.id))))
+app.get("/remove/classroom/:id", async (req, res) => res.send(
+    await (Operation.updateOne({"_id": req.params.id}, {classroom: ""}))
+));
 
-app.get("/", async (_, s) => {
-    let operations = await qModel.find();
-    const users = await tModel.find();
-    let operation_ful = Array();
-
-    // operations.map(o => users.map(u => u._id == o.author ? o.push()))
-
-    operations.map(operation  => {
-        users.map(user => {   
-            if (user._id.toString() == (operation.author.toString())){
-                operation_ful.push({
-                    name: operation.name,
-                    user: user.author,
-                    id: operation._id
-                })
-            }
-        })
-    })
-    s.render("index", {
-        operations: operation_ful.reverse()
-    })
-})
-
-app.get("/opt/:id", async (_, s) => {
-    let oper: any = (await qModel.findById(_.params.id));
-    let ope_edit: any = []
-    oper.operations.map((o: any) => {
-        ope_edit.push({...o, umd: "", ud: "", correct: false})
-    })
-    s.render("user", {
-        operations: JSON.stringify(ope_edit),
-        name: oper.name,
-        id: oper._id
-    })
-})
-
-app.post("/del", jsonBody, async (_, s) => {
-    console.log(_);
-    
-    const user: any = (await tModel.find({token: _.body.token}))[0] || {_id: ""};
-    const oper: any = (await qModel.find({_id: _.body.id}))[0];
-    console.log(user._id == oper.author);
-    console.log(user);
-    
-    if (String(user._id) ==  String(oper.author))
-        await qModel.findByIdAndRemove(oper._id);
-    else return s.sendStatus(403);
-    s.sendStatus(200);
-})
-
-app.get("/back", (_, s) => s.redirect("/"));
+app.listen(PORT, () => console.log("[SERVER]: running on " + SERVER));
 
 mongoose.connect(process.env.URI || "").then(() => {
-    app.listen(PORT);
-    console.log("[SERVER]: running on "+"/"+PORT);
-});
+    console.log("Connected to Database...");
+})

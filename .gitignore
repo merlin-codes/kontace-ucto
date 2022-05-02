@@ -1,4 +1,5 @@
-node_modules
 client-new/build
-.env
+node_modules
+.gitignore
 package-lock.json
+epic/*
