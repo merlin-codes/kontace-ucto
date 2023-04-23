@@ -15,6 +15,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/cookie-session": "^2.0.44",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^16.18.24",
     "axios": "^0.21.4",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
@@ -37,6 +42,8 @@
     "query-string": "^7.1.3",
     "random-memes": "^3.1.7",
     "request": "^2.88.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5",
     "url-parse": "^1.5.10",
     "uuid": "^8.3.2"
   },
