@@ -9,7 +9,7 @@ export const jsonBody = bodyParser.json();
 export const operationModel = Operation;
 
 export const port: number = +(process.env.PORT || 3103);
-let server= `https://kontace-ucto.herokuapp.com`;
+let server= `https://fine-teal-uniform.cyclic.app/`;
 
 if (process.env.ServerType == "local")
     server = `http://localhost:${port}`

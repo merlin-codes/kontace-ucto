@@ -11,7 +11,7 @@ require('dotenv').config();
 exports.jsonBody = body_parser_1.default.json();
 exports.operationModel = Operation_1.Operation;
 exports.port = +(process.env.PORT || 3103);
-let server = `https://kontace-ucto.herokuapp.com`;
+let server = `https://fine-teal-uniform.cyclic.app/`;
 if (process.env.ServerType == "local")
     server = `http://localhost:${exports.port}`;
 exports.SERVER = server;
