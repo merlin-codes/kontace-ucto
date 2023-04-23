@@ -27,6 +27,7 @@
     "fs": "0.0.1-security",
     "googleapis": "^85.0.0",
     "mammoth": "^1.5.1",
+    "mangodb": "^1.0.0",
     "mongoose": "^6.10.5",
     "path": "^0.12.7",
     "query-parse": "^2.0.0",

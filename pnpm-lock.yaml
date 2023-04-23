@@ -18,6 +18,7 @@ specifiers:
   fs: 0.0.1-security
   googleapis: ^85.0.0
   mammoth: ^1.5.1
+  mangodb: ^1.0.0
   mongoose: ^6.10.5
   nodemon: ^2.0.22
   path: ^0.12.7
@@ -41,6 +42,7 @@ dependencies:
   fs: 0.0.1-security
   googleapis: 85.0.0
   mammoth: 1.5.1
+  mangodb: 1.0.0
   mongoose: 6.10.5
   path: 0.12.7
   query-parse: 2.0.0
@@ -2194,6 +2196,10 @@ packages:
       sax: 1.1.6
       underscore: 1.13.6
       xmlbuilder: 10.1.1
+    dev: false
+
+  /mangodb/1.0.0:
+    resolution: {integrity: sha512-9spyqiyoF2ePs1GGePNAfGGv24+hvgkJiYkOOR+ZML0VB5aDXONgtd4iUSZ94yRToPx7P8MXI8ZFwyzzF0+TTg==}
     dev: false
 
   /map-stream/0.0.7:
