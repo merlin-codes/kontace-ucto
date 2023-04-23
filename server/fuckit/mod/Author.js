@@ -23,22 +23,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Operation = exports.OperationSchema = void 0;
+exports.Author = exports.AuthorSchema = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-exports.OperationSchema = new mongoose_1.Schema({
+exports.AuthorSchema = new mongoose_1.Schema({
     author_id: String,
-    author: {
-        refresh_token: String,
-        expiry_date: Number,
-        access_token: String,
-        token_type: String,
-        id_token: String,
-        scope: String
-    },
-    name: String,
-    classroom: String,
-    classname: String,
-    courseId: String,
-    operations: []
+    refresh_token: String,
 });
-exports.Operation = mongoose_1.default.model("questions", exports.OperationSchema);
+exports.Author = mongoose_1.default.model("author", exports.AuthorSchema);
